@@ -64,7 +64,17 @@ export const subcontractsSchema = {
   ),
 
   //attachments
-  attachments: v.optional(v.array(v.string())),
+  attachments: v.optional(
+    v.array(
+      v.object({
+        id: v.string(),
+        name: v.string(),
+        size: v.number(),
+        type: v.string(),
+        url: v.string(),
+      }),
+    ),
+  ),
 
   //current step
   currentStep: v.optional(stepSchema),

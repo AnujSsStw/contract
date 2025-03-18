@@ -18,6 +18,7 @@ import type * as http from "../http.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as projects from "../projects.js";
 import type * as serve from "../serve.js";
+import type * as storage from "../storage.js";
 import type * as subcontract from "../subcontract.js";
 import type * as user from "../user.js";
 
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   myFunctions: typeof myFunctions;
   projects: typeof projects;
   serve: typeof serve;
+  storage: typeof storage;
   subcontract: typeof subcontract;
   user: typeof user;
 }>;

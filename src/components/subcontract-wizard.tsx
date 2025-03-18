@@ -32,7 +32,8 @@ import Link from "next/link";
 import { api } from "@cvx/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { Id } from "@cvx/_generated/dataModel";
-
+import { Attachment } from "@/components/wizard-steps/attachments-step";
+import { toast } from "sonner";
 const steps = [
   { id: "project-info", title: "Project Information", icon: Building2 },
   { id: "subcontractor-info", title: "Subcontractor Quote", icon: FileText },
@@ -62,7 +63,7 @@ export type FormData = {
   contractValue: number | undefined;
   contractValueText: string | undefined;
   scopes: { type: "manual" | "suggested" | "ai"; text: string }[] | undefined;
-  attachments: string[] | undefined;
+  attachments: Attachment[] | undefined;
 
   aiResponse: string | undefined;
   aiScopeOfWork: string | undefined;
@@ -173,10 +174,21 @@ export function SubcontractWizard({
         data: { scopeOfWork: formData.scopes },
       });
     } else if (currentStep === 5) {
+      if (!formData.attachments) {
+        toast.error("Moving on to the next step without attachments");
+      }
       await createSubcontract({
         subId: id,
         step: "attachments",
-        data: { attachments: formData.attachments },
+        data: {
+          attachments: formData.attachments?.map((a) => ({
+            id: a.id,
+            name: a.name,
+            type: a.type,
+            size: a.size,
+            url: a.url as string,
+          })),
+        },
       });
     }
 

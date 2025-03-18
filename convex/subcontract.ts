@@ -79,7 +79,7 @@ export const bulkUpdateOrCreate = mutation({
           });
           break;
         case "attachments":
-          await ctx.db.patch(subId, { fileUrl: data.fileUrl });
+          await ctx.db.patch(subId, { attachments: data.attachments });
           break;
         case "preview":
           //   await ctx.db.patch(subId, { ...data });
