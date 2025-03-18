@@ -1,0 +1,88 @@
+{"code":"02-2100","description":"Surveying"}
+{"code":"02-4100","description":"Demolition"}
+{"code":"02-8200","description":"Abatement"}
+{"code":"03-3000","description":"Cast-in-Place Concrete"}
+{"code":"03-3800","description":"Post-Tensioned Concrete"}
+{"code":"03-4000","description":"Precast Concrete"}
+{"code":"03-5400","description":"Gypsum Concrete Underlayment"}
+{"code":"04-1000","description":"Masonry"}
+{"code":"05-1200","description":"Structural Steel"}
+{"code":"05-3100","description":"Miscellaneous Steel"}
+{"code":"06-1000","description":"Rough Carpentry"}
+{"code":"06-1100","description":"Wood Framing Material"}
+{"code":"06-1200","description":"Wood Trusses"}
+{"code":"06-1300","description":"Wood Framing Labor"}
+{"code":"06-2200","description":"Millwork"}
+{"code":"06-4600","description":"Wood Trim"}
+{"code":"07-1100","description":"Waterproofing"}
+{"code":"07-2100","description":"Thermal Insulation"}
+{"code":"07-2400","description":"Exterior Insulation & Finish Systems (EIFS)"}
+{"code":"07-3100","description":"Shingles & Shakes"}
+{"code":"07-4200","description":"Composite Panels"}
+{"code":"07-4600","description":"Siding"}
+{"code":"07-5000","description":"Membrane Roofing"}
+{"code":"07-6100","description":"Sheet Metal Roofing"}
+{"code":"07-8100","description":"Fireproofing"}
+{"code":"07-9200","description":"Joint Sealants"}
+{"code":"08-1000","description":"Doors, Frames, & Hardware"}
+{"code":"08-1100","description":"Doors & Frames Materials"}
+{"code":"08-1200","description":"Doors & Frames Labor"}
+{"code":"08-3330","description":"Overhead Doors"}
+{"code":"08-4300","description":"Glass & Glazing"}
+{"code":"08-5000","description":"Windows"}
+{"code":"08-5100","description":"Steel Windows"}
+{"code":"08-5200","description":"Wood Windows"}
+{"code":"08-5300","description":"Plastic Windows"}
+{"code":"08-6200","description":"Skylights"}
+{"code":"09-2400","description":"Cement Plastering & Stucco"}
+{"code":"09-2900","description":"Gypsum Board"}
+{"code":"09-3000","description":"Tiling"}
+{"code":"09-6400","description":"Wood Flooring"}
+{"code":"09-6500","description":"Resilient Flooring"}
+{"code":"09-9000","description":"Paintings & Coatings"}
+{"code":"10-1000","description":"Accessories"}
+{"code":"10-2600","description":"Wall & Door Protection"}
+{"code":"10-2800","description":"Toilet, Bath, & Laundry Accessories"}
+{"code":"10-4100","description":"Knox Box"}
+{"code":"10-4400","description":"Fire Protection Specialties"}
+{"code":"10-5100","description":"Lockers & Benches"}
+{"code":"10-5700","description":"Wardrobe & Closet Specialties"}
+{"code":"10-7300","description":"Canopies"}
+{"code":"11-4000","description":"Food Service Equipment"}
+{"code":"11-6500","description":"Athletic & Recreational Equipment"}
+{"code":"11-7000","description":"Healthcare Equipment"}
+{"code":"12-2000","description":"Window Treatments"}
+{"code":"12-3600","description":"Countertops"}
+{"code":"12-5000","description":"Furniture"}
+{"code":"13-1100","description":"Swimming Pools"}
+{"code":"13-1200","description":"Pre-Engineered Metal Buildings"}
+{"code":"14-2000","description":"Elevators"}
+{"code":"14-4200","description":"Wheelchair Lifts"}
+{"code":"14-8000","description":"Scaffolding"}
+{"code":"14-9100","description":"Facility Chutes"}
+{"code":"14-9200","description":"Pneumatic Tube Systems"}
+{"code":"21-1300","description":"Fire Suppression Sprinkler Systems"}
+{"code":"22-1000","description":"Plumbing"}
+{"code":"22-4000","description":"Plumbing Fixtures"}
+{"code":"22-6000","description":"Gas, Vacuum, & Compressed Air Systems"}
+{"code":"23-1000","description":"Heating, Ventilating, & Air Conditioning (HVAC)"}
+{"code":"23-5000","description":"HVAC Equipment"}
+{"code":"26-1000","description":"Electrical"}
+{"code":"26-5000","description":"Lighting Fixtures"}
+{"code":"27-2000","description":"Data Communications"}
+{"code":"27-4100","description":"Audio-Video Systems"}
+{"code":"28-1300","description":"Access Controls"}
+{"code":"28-1400","description":"Electronic Safety & Security"}
+{"code":"28-3100","description":"Fire Detection and Alarm"}
+{"code":"31-2200","description":"Sitework & Utilities"}
+{"code":"31-3100","description":"Soil Treatment"}
+{"code":"31-4200","description":"Shoring and Underpinning"}
+{"code":"32-1200","description":"Paving & Surfacing"}
+{"code":"32-1250","description":"Striping, Wheel Stops, & Signage"}
+{"code":"32-1600","description":"Curbs, Gutters, Sidewalks, & Driveways"}
+{"code":"32-1800","description":"Athletic & Recreational Surfacing"}
+{"code":"32-3000","description":"Site Specialties"}
+{"code":"32-3100","description":"Fences & Gates"}
+{"code":"32-3200","description":"Retaining Wall"}
+{"code":"32-3900","description":"Landscaping & Irrigation"}
+{"code":"33-0500","description":"Utilities"}

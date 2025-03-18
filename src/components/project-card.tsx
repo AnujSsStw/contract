@@ -18,6 +18,7 @@ interface ProjectCardProps {
   client: string;
   subcontractCount: number;
   className?: string;
+  projectId: string;
 }
 
 export function ProjectCard({
@@ -27,6 +28,7 @@ export function ProjectCard({
   client,
   subcontractCount,
   className,
+  projectId,
 }: ProjectCardProps) {
   return (
     <Card className={cn("flex flex-col", className)}>
@@ -62,10 +64,10 @@ export function ProjectCard({
       </CardContent>
       <CardFooter className="flex justify-between pt-4 border-t">
         <Button asChild variant="outline" size="sm">
-          <Link href={`/projects/${number}`}>View Details</Link>
+          <Link href={`/projects/${projectId}`}>View Details</Link>
         </Button>
         <Button asChild size="sm">
-          <Link href={`/subcontracts/new?project=${number}`}>
+          <Link href={`/subcontracts/new?project=${projectId}`}>
             <FileContract className="mr-2 h-4 w-4" />
             New Subcontract
           </Link>

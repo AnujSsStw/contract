@@ -7,9 +7,11 @@ import { ProjectCard } from "@/components/project-card";
 import { SubcontractCard } from "@/components/subcontract-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { preloadedQueryResult } from "convex/nextjs";
+import { fetchMutation, preloadedQueryResult } from "convex/nextjs";
 import { api } from "@cvx/_generated/api";
 import { preloadQuery } from "convex/nextjs";
+import { redirect } from "next/navigation";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 
 export const metadata: Metadata = {
   title: "Dashboard | Construction Contract Generator",
@@ -17,9 +19,20 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const preloaded = await preloadQuery(api.projects.get, {});
+  const preloaded = await preloadQuery(api.projects.getAll, {});
 
   const data = preloadedQueryResult(preloaded);
+
+  const createSubcontract = async () => {
+    "use server";
+
+    const d = await fetchMutation(
+      api.subcontract.create,
+      {},
+      { token: await convexAuthNextjsToken() },
+    );
+    redirect(`/subcontracts/new?subId=${d}&step=0`);
+  };
 
   return (
     <>
@@ -39,11 +52,9 @@ export default async function Home() {
                 New Project
               </Link>
             </Button>
-            <Button asChild>
-              <Link href="/subcontracts/new">
-                <Plus className="mr-2 h-4 w-4" />
-                New Subcontract
-              </Link>
+            <Button onClick={createSubcontract}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Subcontract
             </Button>
           </div>
         </div>
@@ -72,6 +83,7 @@ export default async function Home() {
                   address={project.address}
                   client={project.clientName}
                   subcontractCount={0}
+                  projectId={project._id}
                 />
               ))}
               <Card className="flex flex-col items-center justify-center h-full min-h-[220px] border-dashed">

@@ -16,13 +16,21 @@ export const create = mutation({
     await ctx.db.insert("projects", {
       ...args.data,
       createdBy: user.subject.split("|")[0] as Id<"users">,
+      status: "planning",
     });
   },
 });
 
-export const get = query({
+export const getAll = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("projects").collect();
+  },
+});
+
+export const getById = query({
+  args: { id: v.id("projects") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
   },
 });
