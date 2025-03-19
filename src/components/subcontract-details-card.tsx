@@ -14,18 +14,6 @@ import { numberToWords } from "./wizard-steps/contract-value-step";
 export function SubcontractDetailsCard(
   subcontract: FunctionReturnType<typeof api.subcontract.get>,
 ) {
-  // Format dates
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toDateString();
-    // const date = new Date(dateString);
-    // return date.toLocaleDateString("en-US", {
-    //   year: "numeric",
-    //   month: "long",
-    //   day: "numeric",
-    // });
-  };
-
   // Format currency
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {

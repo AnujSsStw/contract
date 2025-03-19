@@ -1,11 +1,10 @@
-import { ArrowLeft, Download, Edit, FileText, Send } from "lucide-react";
+import { ArrowLeft, Download, Edit, FileText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { SubcontractAttachmentsCard } from "@/components/subcontract-attachments-card";
 import { SubcontractDetailsCard } from "@/components/subcontract-details-card";
 import { SubcontractScopeCard } from "@/components/subcontract-scope-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
@@ -62,11 +61,11 @@ export default async function SubcontractPage({
     );
   }
 
-  const statusColors = {
-    draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
-    exported: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-    // signed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-  };
+  // const statusColors = {
+  //   draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
+  //   exported: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+  //   // signed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+  // };
 
   return (
     <div className="container py-8">

@@ -71,7 +71,7 @@ export type FormData = {
   attachments: Attachment[] | undefined;
 
   aiResponse: string | undefined;
-  aiScopeOfWork: any | undefined;
+  aiScopeOfWork: unknown | undefined;
 
   isDraft: boolean;
   docusignSent: boolean;

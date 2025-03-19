@@ -78,7 +78,7 @@ export function ScopeOfWorkStep({
 
   useEffect(() => {
     if (formData.aiScopeOfWork) {
-      setUploadedAiScopes(formData.aiScopeOfWork);
+      setUploadedAiScopes(formData.aiScopeOfWork as string[]);
       // setSelectedAiScopes(formData.aiScopeOfWork);
     }
 

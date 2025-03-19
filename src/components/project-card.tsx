@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createNewSubcontract } from "@/app/page";
+import { createNewSubcontract } from "@/app/action";
 import { fetchMutation } from "convex/nextjs";
 import { api } from "@cvx/_generated/api";
 import { revalidatePath } from "next/cache";

@@ -7,25 +7,9 @@ import { ProjectCard } from "@/components/project-card";
 import { SubcontractCard } from "@/components/subcontract-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { api } from "@cvx/_generated/api";
-import {
-  fetchMutation,
-  preloadedQueryResult,
-  preloadQuery,
-} from "convex/nextjs";
-import { redirect } from "next/navigation";
-
-export const createNewSubcontract = async (projectId?: string) => {
-  "use server";
-
-  const d = await fetchMutation(
-    api.subcontract.create,
-    {},
-    { token: await convexAuthNextjsToken() },
-  );
-  redirect(`/subcontracts/new?subId=${d}&step=0&projectId=${projectId}`);
-};
+import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
+import { createNewSubcontract } from "./action";
 
 export const metadata: Metadata = {
   title: "Dashboard | Construction Contract Generator",
