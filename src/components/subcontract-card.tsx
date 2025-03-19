@@ -3,6 +3,7 @@ import {
   Building2,
   Download,
   FileCodeIcon as FileContract,
+  Trash,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -15,14 +16,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAction } from "convex/react";
+import { fetchMutation } from "convex/nextjs";
+import { api } from "@cvx/_generated/api";
+import { Id } from "@cvx/_generated/dataModel";
+import { revalidatePath } from "next/cache";
 
 interface SubcontractCardProps {
   title: string;
   projectName: string;
   subcontractor: string;
   value: number;
-  status: "draft" | "exported" | "signed";
+  status: "draft" | "exported";
   className?: string;
+  id: string;
 }
 
 export function SubcontractCard({
@@ -32,6 +39,7 @@ export function SubcontractCard({
   value,
   status,
   className,
+  id,
 }: SubcontractCardProps) {
   return (
     <Card className={cn("flex flex-col", className)}>
@@ -71,20 +79,34 @@ export function SubcontractCard({
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pt-4 border-t">
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/subcontracts/123`}>View Details</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/subcontracts/${id}`}>View Details</Link>
+          </Button>
+          <form
+            action={async () => {
+              "use server";
+
+              await fetchMutation(api.subcontract.deleteSubcontract, {
+                subId: id as Id<"subcontracts">,
+              });
+              revalidatePath(`/projects/[id]`);
+            }}
+          >
+            <Button variant="outline" size="sm">
+              <Trash className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
         {status !== "draft" && (
-          <Button asChild size="sm">
-            <Link href={`/subcontracts/123/download`}>
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </Link>
+          <Button size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Download
           </Button>
         )}
         {status === "draft" && (
           <Button asChild size="sm">
-            <Link href={`/subcontracts/123/edit`}>Continue Editing</Link>
+            <Link href={`/subcontracts/${id}/edit`}>Continue Editing</Link>
           </Button>
         )}
       </CardFooter>

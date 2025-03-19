@@ -20,6 +20,9 @@ const projectsSchemaWithCreatedBy = {
   status: v.optional(
     v.union(v.literal("planning"), v.literal("active"), v.literal("completed")),
   ),
+
+  //subcontracts
+  subcontractCount: v.number(),
 };
 
 export const stepSchema = v.union(
@@ -34,6 +37,7 @@ export const stepSchema = v.union(
 
 export const subcontractsSchema = {
   projectId: v.optional(v.id("projects")),
+  projectName: v.optional(v.string()),
   // subcontractorId: v.id("users"),
 
   //subcontractor quote details
@@ -78,6 +82,12 @@ export const subcontractsSchema = {
 
   //current step
   currentStep: v.optional(stepSchema),
+
+  //is draft
+  isDraft: v.optional(v.boolean()),
+
+  //docusign sent
+  docusignSent: v.optional(v.boolean()),
 };
 
 const costCodesSchema = {
@@ -102,9 +112,9 @@ export default defineSchema({
   }),
   projects: defineTable(projectsSchemaWithCreatedBy),
   costCodes: defineTable(costCodesSchema),
-  scopeOfWorks: defineTable(scopeOfWorksSchema).index("byCostCode", [
-    "cost_code",
-  ]),
+  scopeOfWorks: defineTable(scopeOfWorksSchema)
+    .index("byCostCode", ["cost_code"])
+    .index("byScopeOfWork", ["scope_of_work"]),
   subcontracts: defineTable(subcontractsSchema).index("byProjectId", [
     "projectId",
   ]),

@@ -28,9 +28,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { api } from "@cvx/_generated/api";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Id } from "@cvx/_generated/dataModel";
+import { useEffect } from "react";
 
 const projectSchema = z.object({
   projectNumber: z.string().min(1, { message: "Project number is required" }),
@@ -46,8 +48,14 @@ const projectSchema = z.object({
 });
 
 export default function NewProjectPage() {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("id");
+  const projectData = useQuery(api.projects.getById, {
+    id: (projectId as Id<"projects">) ?? undefined,
+  });
   const router = useRouter();
   const createProject = useMutation(api.projects.create);
+  const updateProject = useMutation(api.projects.update);
   const form = useForm<z.infer<typeof projectSchema>>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -62,30 +70,63 @@ export default function NewProjectPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof projectSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    // console.log(values);
-    try {
-      await createProject({
-        data: {
-          number: values.projectNumber,
-          name: values.projectName,
-          address: values.projectAddress,
-          clientName: values.clientName,
-          clientLegalEntity: values.clientLegalEntity,
-          architect: values.architect,
-          bondsRequired: values.bondsRequired,
-          description: values.description,
-          subcontractCount: 0,
-        },
-      });
+  useEffect(() => {
+    if (projectData) {
+      form.setValue("projectNumber", projectData.number);
+      form.setValue("projectName", projectData.name);
+      form.setValue("projectAddress", projectData.address);
+      form.setValue("clientName", projectData.clientName);
+      form.setValue("clientLegalEntity", projectData.clientLegalEntity);
+      form.setValue("architect", projectData.architect);
+      form.setValue("bondsRequired", projectData.bondsRequired);
+      form.setValue("description", projectData.description);
+    }
+  }, [projectData]);
 
-      toast.success("Project created successfully");
-      router.push("/");
+  async function onSubmit(values: z.infer<typeof projectSchema>) {
+    try {
+      if (projectId) {
+        await updateProject({
+          id: projectId as Id<"projects">,
+          data: {
+            number: values.projectNumber,
+            name: values.projectName,
+            address: values.projectAddress,
+            clientName: values.clientName,
+            clientLegalEntity: values.clientLegalEntity,
+            architect: values.architect,
+            bondsRequired: values.bondsRequired,
+            description: values.description,
+            subcontractCount: projectData?.subcontractCount ?? 0,
+          },
+        });
+      } else {
+        await createProject({
+          data: {
+            number: values.projectNumber,
+            name: values.projectName,
+            address: values.projectAddress,
+            clientName: values.clientName,
+            clientLegalEntity: values.clientLegalEntity,
+            architect: values.architect,
+            bondsRequired: values.bondsRequired,
+            description: values.description,
+            subcontractCount: 0,
+          },
+        });
+      }
+
+      toast.success(
+        projectId
+          ? "Project updated successfully"
+          : "Project created successfully",
+      );
+      router.push(projectId ? `/projects/${projectId}` : "/");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create project");
+      toast.error(
+        projectId ? "Failed to update project" : "Failed to create project",
+      );
     }
   }
 
@@ -93,7 +134,7 @@ export default function NewProjectPage() {
     <div className="container py-8">
       <div className="flex items-center mb-8">
         <Button asChild variant="ghost" size="sm" className="mr-4">
-          <Link href="/dashboard">
+          <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Link>
@@ -263,7 +304,9 @@ export default function NewProjectPage() {
               <Button variant="outline" asChild>
                 <Link href="/">Cancel</Link>
               </Button>
-              <Button type="submit">Create Project</Button>
+              <Button type="submit">
+                {projectId ? "Update Project" : "Create Project"}
+              </Button>
             </CardFooter>
           </Card>
         </form>

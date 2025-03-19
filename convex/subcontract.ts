@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { subcontractsSchema, stepSchema } from "./schema";
+import { Id } from "./_generated/dataModel";
 
 export const create = mutation({
   args: {},
@@ -16,17 +17,70 @@ export const create = mutation({
   },
 });
 
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const subcontracts = await ctx.db.query("subcontracts").collect();
+    return subcontracts;
+  },
+});
+
 export const get = query({
   args: {
     subId: v.id("subcontracts"),
   },
   handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
     const { subId } = args;
     const subcontract = await ctx.db.get(subId);
     if (!subcontract) {
-      throw new Error("Subcontract not found");
+      return null;
     }
-    return subcontract;
+    if (!subcontract.projectId) {
+      return null;
+    }
+    const project = (await ctx.db.get(subcontract.projectId)) || null;
+    if (!subcontract.costCode) {
+      return {
+        ...subcontract,
+        project: project,
+        costCode: null,
+      };
+    }
+
+    const costCode = await ctx.db.get(subcontract.costCode);
+    return {
+      ...subcontract,
+      project: project,
+      costCode: costCode,
+    };
+  },
+});
+
+export const deleteSubcontract = mutation({
+  args: {
+    subId: v.id("subcontracts"),
+  },
+  handler: async (ctx, args) => {
+    const { subId } = args;
+    await ctx.db.delete(subId);
+  },
+});
+
+export const getByProjectId = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const { projectId } = args;
+    const subcontracts = await ctx.db
+      .query("subcontracts")
+      .withIndex("byProjectId", (q) => q.eq("projectId", projectId))
+      .collect();
+    return subcontracts;
   },
 });
 
@@ -46,6 +100,7 @@ export const bulkUpdateOrCreate = mutation({
         case "project-info":
           await ctx.db.patch(subId, {
             projectId: data.projectId,
+            projectName: data.projectName,
             currentStep: step,
           });
           break;
@@ -61,9 +116,11 @@ export const bulkUpdateOrCreate = mutation({
           });
           break;
         case "cost-code":
+          // check if the code is being changed
           await ctx.db.patch(subId, {
             costCode: data.costCode,
             currentStep: step,
+            scopeOfWork: data.scopeOfWork,
           });
           break;
         case "contract-value":
@@ -79,10 +136,17 @@ export const bulkUpdateOrCreate = mutation({
           });
           break;
         case "attachments":
-          await ctx.db.patch(subId, { attachments: data.attachments });
+          await ctx.db.patch(subId, {
+            attachments: data.attachments,
+            currentStep: step,
+          });
           break;
         case "preview":
-          //   await ctx.db.patch(subId, { ...data });
+          await ctx.db.patch(subId, {
+            ...data,
+            currentStep: step,
+          });
+
           break;
       }
     } else {
@@ -109,6 +173,23 @@ export const getCostCodes = query({
   handler: async (ctx) => {
     const costCodes = await ctx.db.query("costCodes").collect();
     return costCodes;
+  },
+});
+
+export const getCostCodeById = query({
+  args: { id: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (!args.id) {
+      return null;
+    }
+    const costCodeId = args.id as Id<"costCodes">;
+    console.log("args.id", args.id);
+
+    const costCode = await ctx.db.get(costCodeId);
+    if (!costCode) {
+      return null;
+    }
+    return costCode;
   },
 });
 
@@ -159,8 +240,20 @@ export const addScopeOfWork = mutation({
     if (!costCodeDoc) {
       throw new Error("Cost code not found");
     }
+    // prevent duplicates
+    const existingScopes = await ctx.db
+      .query("scopeOfWorks")
+      .withIndex("byCostCode", (q) => q.eq("cost_code", costCodeDoc.code))
+      .collect();
+
     const p = scopeOfWork
-      .filter((s) => s.type !== "manual")
+      .filter((s) => s.type !== "suggested")
+      .filter(
+        (item) =>
+          !existingScopes.some(
+            (s) => s.scope_of_work === item.text && s.type === item.type,
+          ),
+      )
       .map((s) => {
         return ctx.db.insert("scopeOfWorks", {
           cost_code: costCodeDoc.code,

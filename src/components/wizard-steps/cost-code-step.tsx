@@ -9,18 +9,32 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@cvx/_generated/api";
 import { useQuery } from "convex/react";
 import { FormData } from "../subcontract-wizard";
+import { useEffect } from "react";
 
 interface CostCodeStepProps {
   formData: FormData;
-  updateFormData: (data: FormData) => void;
+  updateFormData: (data: Partial<FormData>) => void;
 }
+
+export type CostCode = {
+  _id: string;
+  description: string;
+  code: string;
+  _creationTime: number;
+};
 
 export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const costCodes = useQuery(api.subcontract.getCostCodes);
-  const [selectedCostCode, setSelectedCostCode] = React.useState<string>(
-    formData.costCode || "",
+  const [selectedCostCode, setSelectedCostCode] = React.useState(
+    formData.costCode?._id,
   );
+
+  useEffect(() => {
+    if (formData.costCode) {
+      setSelectedCostCode(formData.costCode._id);
+    }
+  }, [formData.costCode]);
 
   const filteredCostCodes =
     costCodes?.filter(
@@ -31,7 +45,9 @@ export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
 
   const handleCostCodeSelect = (costCode: string) => {
     setSelectedCostCode(costCode);
-    updateFormData({ ...formData, costCode });
+    updateFormData({
+      costCode: costCodes?.find((code) => code._id === costCode),
+    });
   };
 
   return (

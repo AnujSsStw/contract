@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, FileCodeIcon as FileContract } from "lucide-react";
+import { Building2, FileCodeIcon as FileContract, Trash } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { createNewSubcontract } from "@/app/page";
+import { fetchMutation } from "convex/nextjs";
+import { api } from "@cvx/_generated/api";
+import { revalidatePath } from "next/cache";
+import { Id } from "@cvx/_generated/dataModel";
 
 interface ProjectCardProps {
   name: string;
@@ -20,6 +25,15 @@ interface ProjectCardProps {
   className?: string;
   projectId: string;
 }
+
+export const deleteProject = async (projectId: string) => {
+  "use server";
+
+  await fetchMutation(api.projects.deleteProject, {
+    projectId: projectId as Id<"projects">,
+  });
+  revalidatePath("/");
+};
 
 export function ProjectCard({
   name,
@@ -63,14 +77,24 @@ export function ProjectCard({
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pt-4 border-t">
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/projects/${projectId}`}>View Details</Link>
-        </Button>
-        <Button asChild size="sm">
-          <Link href={`/subcontracts/new?project=${projectId}`}>
-            <FileContract className="mr-2 h-4 w-4" />
-            New Subcontract
-          </Link>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/projects/${projectId}`}>View Details</Link>
+          </Button>
+          <form
+            action={async () => {
+              "use server";
+              await deleteProject(projectId);
+            }}
+          >
+            <Button variant="destructive" size="sm">
+              <Trash className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
+        <Button onClick={createNewSubcontract.bind(null, projectId)} size="sm">
+          <FileContract className="mr-2 h-4 w-4" />
+          New Subcontract
         </Button>
       </CardFooter>
     </Card>

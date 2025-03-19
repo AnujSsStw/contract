@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 interface SubcontractorInfoStepProps {
   formData: FormData;
-  updateFormData: (data: FormData) => void;
+  updateFormData: (data: Partial<FormData>) => void;
   subId: string;
 }
 
@@ -63,8 +63,8 @@ export function SubcontractorInfoStep({
 
       console.log(extractedData);
 
+      // setting the ai response and scope of work
       updateFormData({
-        ...formData,
         subcontractorName: extractedData.companyName,
         subcontractorAddress: extractedData.companyAddress,
         subcontractorContact: extractedData.contactName,
@@ -84,7 +84,7 @@ export function SubcontractorInfoStep({
   };
 
   const handleInputChange = (field: string, value: string) => {
-    updateFormData({ ...formData, [field]: value });
+    updateFormData({ [field]: value });
   };
 
   return (

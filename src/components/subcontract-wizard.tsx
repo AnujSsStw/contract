@@ -21,13 +21,17 @@ import {
 } from "@/components/ui/card";
 import { AttachmentsStep } from "@/components/wizard-steps/attachments-step";
 import { ContractValueStep } from "@/components/wizard-steps/contract-value-step";
-import { CostCodeStep } from "@/components/wizard-steps/cost-code-step";
+import {
+  CostCode,
+  CostCodeStep,
+} from "@/components/wizard-steps/cost-code-step";
 import { PreviewStep } from "@/components/wizard-steps/preview-step";
 import { ProjectInfoStep } from "@/components/wizard-steps/project-info-step";
 import { ScopeOfWorkStep } from "@/components/wizard-steps/scope-of-work-step";
 import { SubcontractorInfoStep } from "@/components/wizard-steps/subcontractor-info-step";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { api } from "@cvx/_generated/api";
 import { useMutation, useQuery } from "convex/react";
@@ -53,43 +57,59 @@ function parseStep(step: string | undefined) {
 }
 
 export type FormData = {
-  projectId: string;
+  projectName: string | undefined;
+  projectId: string | undefined;
   subcontractorName: string | undefined;
   subcontractorAddress: string | undefined;
   subcontractorContact: string | undefined;
   subcontractorPhone: string | undefined;
   subcontractorEmail: string | undefined;
-  costCode: string | undefined;
+  costCode: CostCode | null;
   contractValue: number | undefined;
   contractValueText: string | undefined;
   scopes: { type: "manual" | "suggested" | "ai"; text: string }[] | undefined;
   attachments: Attachment[] | undefined;
 
   aiResponse: string | undefined;
-  aiScopeOfWork: string | undefined;
+  aiScopeOfWork: any | undefined;
+
+  isDraft: boolean;
+  docusignSent: boolean;
 };
+
 export function SubcontractWizard({
   step,
   subId,
+  projectId,
+  fromEdit = "false",
 }: {
   step: string | undefined;
   subId: string | undefined;
+  projectId: string | undefined;
+  fromEdit: string | undefined;
 }) {
+  React.useEffect(() => {
+    setCurrentStep(parseStep(step));
+  }, [step]);
+  const router = useRouter();
   const [currentStep, setCurrentStep] = React.useState(parseStep(step));
   const [formData, setFormData] = React.useState<FormData>({
-    projectId: "",
+    projectId: projectId,
+    projectName: "",
     subcontractorName: "",
     subcontractorAddress: "",
     subcontractorContact: "",
     subcontractorPhone: "",
     subcontractorEmail: "",
-    costCode: "",
+    costCode: null,
     contractValue: 0,
     contractValueText: "",
     scopes: [],
     attachments: [],
     aiResponse: undefined,
     aiScopeOfWork: undefined,
+    isDraft: false,
+    docusignSent: false,
   });
   const dataFromDb = useQuery(api.subcontract.get, {
     subId: subId as Id<"subcontracts">,
@@ -100,12 +120,13 @@ export function SubcontractWizard({
     if (dataFromDb) {
       setFormData({
         projectId: dataFromDb.projectId as Id<"projects">,
+        projectName: dataFromDb.projectName,
         subcontractorName: dataFromDb.companyName,
         subcontractorAddress: dataFromDb.companyAddress,
         subcontractorContact: dataFromDb.contactName,
         subcontractorPhone: dataFromDb.contactPhone,
         subcontractorEmail: dataFromDb.contactEmail,
-        costCode: dataFromDb.costCode as Id<"costCodes">,
+        costCode: dataFromDb.costCode,
         contractValue: dataFromDb.contractValue,
         scopes: dataFromDb.scopeOfWork?.map((s) => ({
           type: s.type as "manual" | "suggested" | "ai",
@@ -113,8 +134,10 @@ export function SubcontractWizard({
         })),
         attachments: dataFromDb.attachments,
         contractValueText: undefined,
-        aiResponse: undefined,
-        aiScopeOfWork: undefined,
+        aiResponse: dataFromDb.aiResponse || undefined,
+        aiScopeOfWork: dataFromDb.aiScopeOfWork || undefined,
+        isDraft: dataFromDb.isDraft ?? false,
+        docusignSent: dataFromDb.docusignSent ?? false,
       });
     }
   }, [dataFromDb]);
@@ -122,20 +145,35 @@ export function SubcontractWizard({
   const createSubcontract = useMutation(api.subcontract.bulkUpdateOrCreate);
   const addScopeOfWork = useMutation(api.subcontract.addScopeOfWork);
 
-  React.useEffect(() => {
-    setCurrentStep(parseStep(step));
-  }, [step]);
-
   // TODO: add error handling
   const nextStep = async () => {
     const id = subId as Id<"subcontracts">;
     if (currentStep === 0) {
+      if (!formData.projectId || !formData.projectName) {
+        toast.error("Project is required");
+        return;
+      }
       await createSubcontract({
         subId: id,
         step: "project-info",
-        data: { projectId: formData.projectId as Id<"projects"> },
+        data: {
+          projectId: formData.projectId as Id<"projects">,
+          projectName: formData.projectName,
+        },
       });
     } else if (currentStep === 1) {
+      if (
+        !formData.subcontractorName ||
+        !formData.subcontractorAddress ||
+        !formData.subcontractorContact ||
+        !formData.subcontractorPhone ||
+        !formData.subcontractorEmail
+      ) {
+        toast.error(
+          "Subcontractor name, address, contact, phone, and email are required",
+        );
+        return;
+      }
       await createSubcontract({
         subId: id,
         step: "subcontractor-info",
@@ -148,12 +186,28 @@ export function SubcontractWizard({
         },
       });
     } else if (currentStep === 2) {
+      if (!formData.costCode) {
+        toast.error("Cost code is required");
+        return;
+      }
+
       await createSubcontract({
         subId: id,
         step: "cost-code",
-        data: { costCode: formData.costCode as Id<"costCodes"> },
+        data: {
+          costCode: formData.costCode._id as Id<"costCodes">,
+          scopeOfWork:
+            fromEdit === "true" &&
+            dataFromDb?.costCode?._id !== formData.costCode._id
+              ? []
+              : formData.scopes,
+        },
       });
     } else if (currentStep === 3) {
+      if (!formData.contractValue) {
+        toast.error("Contract value is required");
+        return;
+      }
       await createSubcontract({
         subId: id,
         step: "contract-value",
@@ -161,12 +215,13 @@ export function SubcontractWizard({
       });
     } else if (currentStep === 4) {
       if (!formData.scopes) {
-        throw new Error("Scopes are required");
+        toast.error("Scopes are required");
+        return;
       }
       // also add ai and manual scopes to the db
       await addScopeOfWork({
         scopeOfWork: formData.scopes,
-        costCode: formData.costCode as Id<"costCodes">,
+        costCode: formData.costCode?._id as Id<"costCodes">,
       });
       await createSubcontract({
         subId: id,
@@ -175,7 +230,7 @@ export function SubcontractWizard({
       });
     } else if (currentStep === 5) {
       if (!formData.attachments) {
-        toast.error("Moving on to the next step without attachments");
+        toast.warning("Moving on to the next step without attachments");
       }
       await createSubcontract({
         subId: id,
@@ -190,6 +245,23 @@ export function SubcontractWizard({
           })),
         },
       });
+    } else if (currentStep === 6) {
+      await createSubcontract({
+        subId: id,
+        step: "preview",
+        data: {
+          isDraft: formData.isDraft,
+          docusignSent: formData.docusignSent,
+        },
+      });
+
+      if (formData.isDraft) {
+        toast.success("Subcontract saved as draft");
+      } else {
+        toast.success("Subcontract generated and sent to DocuSign");
+      }
+
+      router.push(`/subcontracts/${id}`);
     }
 
     setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -199,9 +271,11 @@ export function SubcontractWizard({
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
+  // TODO: fix in all steps
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
+  console.log(formData);
 
   return (
     <div className="space-y-8">
@@ -294,6 +368,7 @@ export function SubcontractWizard({
             />
           )}
           {currentStep === 4 && subId && (
+            // TODO: work on this step
             <ScopeOfWorkStep
               formData={formData}
               updateFormData={updateFormData}
@@ -306,7 +381,9 @@ export function SubcontractWizard({
               updateFormData={updateFormData}
             />
           )}
-          {currentStep === 6 && subId && <PreviewStep formData={formData} />}
+          {currentStep === 6 && subId && formData.projectId && (
+            <PreviewStep formData={formData} updateFormData={updateFormData} />
+          )}
           {currentStep > 0 && !subId && (
             <div className="text-center py-8 text-muted-foreground">
               Please select a project first to continue with the subcontract
@@ -329,7 +406,9 @@ export function SubcontractWizard({
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button disabled={!subId}>Generate Subcontract</Button>
+            <Button disabled={!subId} onClick={nextStep}>
+              Generate Subcontract {formData.isDraft ? "(Draft)" : ""}
+            </Button>
           )}
         </CardFooter>
       </Card>

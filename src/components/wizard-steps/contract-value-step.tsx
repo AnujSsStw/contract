@@ -4,14 +4,15 @@ import * as React from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormData } from "../subcontract-wizard";
 
 interface ContractValueStepProps {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: FormData;
+  updateFormData: (data: Partial<FormData>) => void;
 }
 
 // Function to convert number to words
-function numberToWords(num: number): string {
+export function numberToWords(num: number): string {
   const ones = [
     "",
     "One",
@@ -108,6 +109,11 @@ export function ContractValueStep({
   const [valueInWords, setValueInWords] = React.useState<string>(
     formData.contractValueText || "",
   );
+
+  React.useEffect(() => {
+    setValue(formData.contractValue ? formData.contractValue.toString() : "");
+    setValueInWords(numberToWords(formData.contractValue ?? 0));
+  }, [formData.contractValue]);
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/[^0-9.]/g, "");

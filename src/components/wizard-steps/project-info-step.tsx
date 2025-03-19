@@ -19,10 +19,10 @@ export function ProjectInfoStep({
   updateFormData,
 }: {
   formData: FormData;
-  updateFormData: (data: FormData) => void;
+  updateFormData: (data: Partial<FormData>) => void;
 }) {
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedProject, setSelectedProject] = React.useState<string | null>(
+  const [selectedProject, setSelectedProject] = React.useState(
     formData.projectId,
   );
   const projects = useQuery(api.projects.getAll);
@@ -40,12 +40,24 @@ export function ProjectInfoStep({
 
   const handleProjectSelect = (projectId: string) => {
     setSelectedProject(projectId);
-    updateFormData({ ...formData, projectId: projectId });
+    updateFormData({
+      projectId: projectId,
+    });
   };
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
+        <div className="flex items-center gap-2 justify-between mb-3">
+          <Label htmlFor="subcontract-name">Subcontract Name</Label>
+          <Input
+            id="subcontract-name"
+            placeholder="Enter subcontract name"
+            value={formData.projectName}
+            onChange={(e) => updateFormData({ projectName: e.target.value })}
+          />
+        </div>
+
         <Label htmlFor="project-search">Search Projects</Label>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

@@ -16,10 +16,11 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
 import { convertPdfToBase64 } from "./subcontractor-info-step";
+import { useCallback, useEffect } from "react";
 
 interface ScopeOfWorkStepProps {
   formData: FormData;
-  updateFormData: (data: FormData) => void;
+  updateFormData: (data: Partial<FormData>) => void;
   subId: string;
 }
 
@@ -28,56 +29,75 @@ type Scope = {
   text: string;
 };
 
+interface SuggestedScope {
+  _id: string;
+  scope_of_work: string;
+  type: string;
+}
+
 export function ScopeOfWorkStep({
   formData,
   updateFormData,
   subId,
 }: ScopeOfWorkStepProps) {
-  // manual scopes
+  // Track all selected scopes locally to handle disabling in suggested tab
+  const [localSelectedScopes, setLocalSelectedScopes] = React.useState<Scope[]>(
+    formData.scopes || [],
+  );
+
+  // Manual scopes from formData.scopes
   const [manualScopes, setManualScopes] = React.useState<string[]>(
     formData.scopes?.filter((s) => s.type === "manual").map((s) => s.text) || [
       "",
     ],
   );
 
-  // suggested scopes
+  // AI scopes combined from both sources
+  const [selectedAiScopes, setSelectedAiScopes] = React.useState<string[]>(
+    formData.scopes?.filter((s) => s.type === "ai").map((s) => s.text) || [],
+  );
+
+  // Suggested scopes from formData.scopes
   const [selectedSuggested, setSelectedSuggested] = React.useState<string[]>(
     formData.scopes?.filter((s) => s.type === "suggested").map((s) => s.text) ||
       [],
   );
+
+  // Get all suggested scopes from query
   const suggestedScopes = useQuery(api.subcontract.getSuggestedScopes, {
-    costCode: formData.costCode
-      ? (formData.costCode as Id<"costCodes">)
-      : undefined,
+    costCode: formData.costCode?._id as Id<"costCodes">,
     subId: subId as Id<"subcontracts">,
   });
 
-  // ai generated scopes
+  // File upload state
   const [file, setFile] = React.useState<File | null>(null);
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const [fileAiScopes, setFileAiScopes] = React.useState<string[]>(
-    formData.scopes
-      ?.filter(
-        (s) =>
-          s.type === "ai" &&
-          !suggestedScopes?.aiSuggestedScopes?.includes(s.text),
-      )
-      .map((s) => s.text) || [],
-  );
-  const [selectedAiSuggested, setSelectedAiSuggested] = React.useState<
-    string[]
-  >(
-    formData.scopes
-      ?.filter(
-        (s) =>
-          s.type === "ai" &&
-          suggestedScopes?.aiSuggestedScopes?.includes(s.text),
-      )
-      .map((s) => s.text) || [],
-  );
+  const [uploadedAiScopes, setUploadedAiScopes] = React.useState<string[]>([]);
+
   const aiGeneratedScopesAction = useAction(api.serve.generateScopeOfWork);
 
-  // Manual Scopes
+  useEffect(() => {
+    if (formData.aiScopeOfWork) {
+      setUploadedAiScopes(formData.aiScopeOfWork);
+      // setSelectedAiScopes(formData.aiScopeOfWork);
+    }
+
+    // if (formData.scopes) {
+    //   setSelectedAiScopes(
+    //     formData.scopes.filter((s) => s.type === "ai").map((s) => s.text),
+    //   );
+    //   setSelectedSuggested(
+    //     formData.scopes
+    //       .filter((s) => s.type === "suggested")
+    //       .map((s) => s.text),
+    //   );
+    //   setManualScopes(
+    //     formData.scopes.filter((s) => s.type === "manual").map((s) => s.text),
+    //   );
+    // }
+  }, [formData.aiScopeOfWork]);
+
+  // Manual Scopes handlers
   const handleManualScopeChange = (index: number, value: string) => {
     const newScopes = [...manualScopes];
     newScopes[index] = value;
@@ -95,34 +115,23 @@ export function ScopeOfWorkStep({
     updateScopes();
   };
 
+  // Toggle handlers for different scope types
   const toggleSuggestedScope = (scope: string) => {
-    if (selectedSuggested.includes(scope)) {
-      setSelectedSuggested(selectedSuggested.filter((s) => s !== scope));
-    } else {
-      setSelectedSuggested([...selectedSuggested, scope]);
-    }
+    setSelectedSuggested((prev) =>
+      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope],
+    );
     updateScopes();
   };
 
-  const toggleFileAiScope = (scope: string) => {
-    if (fileAiScopes.includes(scope)) {
-      setFileAiScopes(fileAiScopes.filter((s) => s !== scope));
-    } else {
-      setFileAiScopes([...fileAiScopes, scope]);
-    }
+  const toggleAiScope = (scope: string) => {
+    setSelectedAiScopes((prev) =>
+      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope],
+    );
     updateScopes();
   };
+  console.log("selectedAiScopes", uploadedAiScopes, selectedAiScopes);
 
-  const toggleSuggestedAiScope = (scope: string) => {
-    if (selectedAiSuggested.includes(scope)) {
-      setSelectedAiSuggested(selectedAiSuggested.filter((s) => s !== scope));
-    } else {
-      setSelectedAiSuggested([...selectedAiSuggested, scope]);
-    }
-    updateScopes();
-  };
-
-  // AI Scopes
+  // File upload handlers
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
@@ -140,12 +149,14 @@ export function ScopeOfWorkStep({
       base64Pdf,
     });
 
-    setFileAiScopes(newAiScopes);
+    setUploadedAiScopes(newAiScopes);
+    setSelectedAiScopes((prev) => [...new Set([...prev, ...newAiScopes])]);
     setIsProcessing(false);
     updateScopes();
   };
 
-  const updateScopes = () => {
+  // Update formData with all selected scopes
+  const updateScopes = useCallback(() => {
     const allScopes: Scope[] = [
       ...manualScopes
         .filter((s) => s.trim())
@@ -154,16 +165,25 @@ export function ScopeOfWorkStep({
         type: "suggested" as const,
         text,
       })),
-      ...fileAiScopes.map((text) => ({ type: "ai" as const, text })),
-      ...selectedAiSuggested.map((text) => ({ type: "ai" as const, text })),
+      ...selectedAiScopes.map((text) => ({ type: "ai" as const, text })),
     ];
 
-    updateFormData({ ...formData, scopes: allScopes });
-  };
+    setLocalSelectedScopes(allScopes);
+    updateFormData({
+      scopes: allScopes,
+      aiScopeOfWork: uploadedAiScopes,
+    });
+  }, [
+    manualScopes,
+    selectedSuggested,
+    selectedAiScopes,
+    uploadedAiScopes,
+    updateFormData,
+  ]);
 
   React.useEffect(() => {
     updateScopes();
-  }, [manualScopes, selectedSuggested, fileAiScopes, selectedAiSuggested]);
+  }, [manualScopes, selectedSuggested, selectedAiScopes]);
 
   return (
     <Tabs defaultValue="suggested" className="w-full">
@@ -206,34 +226,38 @@ export function ScopeOfWorkStep({
           {suggestedScopes?.costCode.code || "this cost code"}
         </Label>
         <ScrollArea className="h-[400px] rounded-md border p-4">
-          {suggestedScopes?.suggestedScopes.length &&
-          suggestedScopes?.suggestedScopes.length > 0
-            ? suggestedScopes?.suggestedScopes.map((scope, index) => (
-                <div key={index} className="flex items-start space-x-2 py-2">
-                  <Checkbox
-                    id={`suggested-${index}`}
-                    checked={selectedSuggested.includes(scope.scope_of_work)}
-                    onCheckedChange={() =>
-                      toggleSuggestedScope(scope.scope_of_work)
-                    }
-                    disabled={
-                      manualScopes.includes(scope.scope_of_work) ||
-                      fileAiScopes.includes(scope.scope_of_work) ||
-                      selectedAiSuggested.includes(scope.scope_of_work)
-                    }
-                  />
-                  <Label
-                    htmlFor={`suggested-${index}`}
-                    className="text-sm cursor-pointer"
-                  >
-                    {scope.scope_of_work}
-                    <p className="text-xs text-muted-foreground">
-                      {scope.type}
-                    </p>
-                  </Label>
-                </div>
-              ))
-            : "No suggested scopes found"}
+          {suggestedScopes?.suggestedScopes.map((scope: SuggestedScope) => {
+            // Check if this scope is already selected as manual or AI scope
+            const isSelectedAsOtherType = localSelectedScopes.some(
+              (s) =>
+                s.text === scope.scope_of_work &&
+                (s.type === "manual" || s.type === "ai"),
+            );
+
+            return (
+              <div key={scope._id} className="flex items-start space-x-2 py-2">
+                <Checkbox
+                  id={`suggested-${scope._id}`}
+                  checked={selectedSuggested.includes(scope.scope_of_work)}
+                  onCheckedChange={() =>
+                    toggleSuggestedScope(scope.scope_of_work)
+                  }
+                  disabled={isSelectedAsOtherType}
+                />
+                <Label
+                  htmlFor={`suggested-${scope._id}`}
+                  className={`text-sm cursor-pointer ${isSelectedAsOtherType ? "text-muted-foreground" : ""}`}
+                >
+                  {scope.scope_of_work} ({scope.type})
+                  {isSelectedAsOtherType &&
+                    " - Already selected as " +
+                      localSelectedScopes.find(
+                        (s) => s.text === scope.scope_of_work,
+                      )?.type}
+                </Label>
+              </div>
+            );
+          })}
         </ScrollArea>
       </TabsContent>
 
@@ -274,7 +298,7 @@ export function ScopeOfWorkStep({
               </div>
             </CardContent>
           </Card>
-          {file && fileAiScopes.length === 0 && (
+          {file && uploadedAiScopes.length === 0 && (
             <Button
               onClick={handleUpload}
               disabled={isProcessing}
@@ -286,53 +310,28 @@ export function ScopeOfWorkStep({
           )}
         </div>
 
-        {(fileAiScopes.length > 0 ||
-          (suggestedScopes?.aiSuggestedScopes &&
-            suggestedScopes.aiSuggestedScopes.length > 0)) && (
+        {(uploadedAiScopes.length > 0 || selectedAiScopes.length > 0) && (
           <div className="space-y-4">
             <Label>AI Generated Scopes</Label>
             <ScrollArea className="h-[300px] rounded-md border p-4">
-              {/* Show scopes from file upload */}
-              {fileAiScopes.map((scope: string, index: number) => (
+              {uploadedAiScopes.map((scope, index) => (
                 <div
-                  key={`file-${index}`}
+                  key={`ai-${index}`}
                   className="flex items-start space-x-2 py-2"
                 >
                   <Checkbox
-                    id={`ai-file-${index}`}
-                    checked={fileAiScopes.includes(scope)}
-                    onCheckedChange={() => toggleFileAiScope(scope)}
+                    id={`ai-${index}`}
+                    checked={selectedAiScopes.includes(scope)}
+                    onCheckedChange={() => toggleAiScope(scope)}
                   />
                   <Label
-                    htmlFor={`ai-file-${index}`}
+                    htmlFor={`ai-${index}`}
                     className="text-sm cursor-pointer"
                   >
                     {scope}
                   </Label>
                 </div>
               ))}
-
-              {/* Show scopes from suggestedScopes.aiSuggestedScopes */}
-              {suggestedScopes?.aiSuggestedScopes?.map(
-                (scope: string, index: number) => (
-                  <div
-                    key={`suggested-${index}`}
-                    className="flex items-start space-x-2 py-2"
-                  >
-                    <Checkbox
-                      id={`ai-suggested-${index}`}
-                      checked={selectedAiSuggested.includes(scope)}
-                      onCheckedChange={() => toggleSuggestedAiScope(scope)}
-                    />
-                    <Label
-                      htmlFor={`ai-suggested-${index}`}
-                      className="text-sm cursor-pointer"
-                    >
-                      {scope}
-                    </Label>
-                  </div>
-                ),
-              )}
             </ScrollArea>
           </div>
         )}

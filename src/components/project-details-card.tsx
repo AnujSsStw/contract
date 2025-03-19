@@ -6,34 +6,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { DataModel } from "@cvx/_generated/dataModel";
 
-interface ProjectDetailsCardProps {
-  project: {
-    id: string;
-    name: string;
-    address: string;
-    client: string;
-    clientLegalEntity: string;
-    architect: string;
-    bonds: boolean;
-    description: string;
-    status: string;
-    startDate: string;
-    endDate: string;
-  };
-}
-
-export function ProjectDetailsCard({ project }: ProjectDetailsCardProps) {
-  // Format dates
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
+export function ProjectDetailsCard({
+  project,
+}: {
+  project: DataModel["projects"]["document"];
+}) {
   return (
     <Card>
       <CardHeader>
@@ -50,19 +29,17 @@ export function ProjectDetailsCard({ project }: ProjectDetailsCardProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
               <div className="font-medium">Project Number</div>
-              <div>{project.id}</div>
+              <div>{project.name}</div>
             </div>
             <div>
               <div className="font-medium">Status</div>
               <div className="capitalize">{project.status}</div>
             </div>
             <div>
-              <div className="font-medium">Start Date</div>
-              <div>{formatDate(project.startDate)}</div>
-            </div>
-            <div>
-              <div className="font-medium">End Date</div>
-              <div>{formatDate(project.endDate)}</div>
+              <div className="font-medium">Created at</div>
+              <div className="capitalize">
+                {new Date(project._creationTime).toLocaleDateString()}
+              </div>
             </div>
           </div>
         </div>
@@ -88,7 +65,7 @@ export function ProjectDetailsCard({ project }: ProjectDetailsCardProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
               <div className="font-medium">Client Name</div>
-              <div>{project.client}</div>
+              <div>{project.clientName}</div>
             </div>
             <div>
               <div className="font-medium">Legal Entity</div>
@@ -110,7 +87,7 @@ export function ProjectDetailsCard({ project }: ProjectDetailsCardProps) {
             </div>
             <div>
               <div className="font-medium">Bonds Required</div>
-              <div>{project.bonds ? "Yes" : "No"}</div>
+              <div>{project.bondsRequired ? "Yes" : "No"}</div>
             </div>
           </div>
         </div>

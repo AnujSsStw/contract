@@ -18,8 +18,10 @@ export default async function NewSubcontractPage({
 }) {
   const step = (await searchParams).step as string | undefined;
   const subId = (await searchParams).subId as string | undefined;
+  const projectId = (await searchParams).projectId as string | undefined;
+  const fromEdit = (await searchParams).fromEdit as string | undefined;
 
-  if (!subId) {
+  if (!subId && !projectId) {
     redirect("/");
   }
 
@@ -37,7 +39,12 @@ export default async function NewSubcontractPage({
         </h1>
       </div>
 
-      <SubcontractWizard step={step} subId={subId} />
+      <SubcontractWizard
+        step={step}
+        subId={subId}
+        projectId={projectId}
+        fromEdit={fromEdit}
+      />
     </div>
   );
 }

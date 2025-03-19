@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Id } from "@cvx/_generated/dataModel";
 interface AttachmentsStepProps {
   formData: FormData;
-  updateFormData: (data: FormData) => void;
+  updateFormData: (data: Partial<FormData>) => void;
 }
 
 export interface Attachment {
@@ -128,25 +128,27 @@ export function AttachmentsStep({
   };
 
   const removeAttachment = async (id: string) => {
-    const attachment = attachments.find((a) => a.id === id);
-    console.log("Attachments", attachments);
+    if (window.confirm("Are you sure you want to remove this attachment?")) {
+      const attachment = attachments.find((a) => a.id === id);
+      console.log("Attachments", attachments);
 
-    console.log("Removing file", attachment);
-    if (!attachment) return;
-    if (attachment.url) {
-      console.log("Removing file", attachment.url);
-      await removeFile({
-        fileId: attachment.url as Id<"_storage">,
+      console.log("Removing file", attachment);
+      if (!attachment) return;
+      if (attachment.url) {
+        console.log("Removing file", attachment.url);
+        await removeFile({
+          fileId: attachment.url as Id<"_storage">,
+        });
+      }
+      const updatedAttachments = attachments.filter(
+        (attachment) => attachment.id !== id,
+      );
+      setAttachments(updatedAttachments);
+      updateFormData({
+        ...formData,
+        attachments: updatedAttachments,
       });
     }
-    const updatedAttachments = attachments.filter(
-      (attachment) => attachment.id !== id,
-    );
-    setAttachments(updatedAttachments);
-    updateFormData({
-      ...formData,
-      attachments: updatedAttachments,
-    });
   };
 
   const formatFileSize = (bytes: number): string => {

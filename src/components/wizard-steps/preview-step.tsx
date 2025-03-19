@@ -1,57 +1,34 @@
-"use client"
-import { Download, FileText, Paperclip } from "lucide-react"
+"use client";
+import { Download, FileText, Paperclip } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
-
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FormData } from "../subcontract-wizard";
+import { useQuery } from "convex/react";
+import { api } from "@cvx/_generated/api";
+import { Id } from "@cvx/_generated/dataModel";
 interface PreviewStepProps {
-  formData: any
+  formData: FormData;
+  updateFormData: (data: Partial<FormData>) => void;
 }
 
-// Mock project data based on project ID
-const getProjectData = (projectId: string) => {
-  const projects = {
-    "PRJ-2023-001": {
-      name: "Commercial Office Building",
-      address: "123 Main St, Anytown, USA",
-      client: "ABC Corporation",
-      clientLegalEntity: "ABC Corp. LLC",
-      architect: "Smith & Associates Architecture",
-      bonds: false,
-    },
-    "PRJ-2023-002": {
-      name: "Residential Complex",
-      address: "456 Oak Ave, Somewhere, USA",
-      client: "XYZ Developers",
-      clientLegalEntity: "XYZ Development LLC",
-      architect: "Modern Design Group",
-      bonds: true,
-    },
-    "PRJ-2023-003": {
-      name: "Hospital Renovation",
-      address: "789 Medical Dr, Healthtown, USA",
-      client: "Healthcare Systems Inc.",
-      clientLegalEntity: "Healthcare Systems Corporation",
-      architect: "Medical Architecture Partners",
-      bonds: true,
-    },
-  }
-
-  return projects[projectId as keyof typeof projects] || null
-}
-
-export function PreviewStep({ formData }: PreviewStepProps) {
-  const projectData = formData.projectId ? getProjectData(formData.projectId) : null
+export function PreviewStep({ formData, updateFormData }: PreviewStepProps) {
+  const projectData = formData.projectId ? formData.projectId : null;
+  const project = useQuery(api.projects.getById, {
+    id: projectData ? (projectData as Id<"projects">) : undefined,
+  });
 
   return (
     <div className="space-y-6">
       <Tabs defaultValue="preview" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="preview">Preview</TabsTrigger>
-          <TabsTrigger value="attachments">Attachments ({formData.attachments?.length || 0})</TabsTrigger>
+          <TabsTrigger value="attachments">
+            Attachments ({formData.attachments?.length || 0})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="preview" className="space-y-4 pt-4">
@@ -66,32 +43,34 @@ export function PreviewStep({ formData }: PreviewStepProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Project Information</h3>
-                  {projectData ? (
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    Project Information
+                  </h3>
+                  {project ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="font-medium">Project Name:</p>
-                        <p>{projectData.name}</p>
+                        <p>{project.name}</p>
                       </div>
                       <div>
                         <p className="font-medium">Project Address:</p>
-                        <p>{projectData.address}</p>
+                        <p>{project.address}</p>
                       </div>
                       <div>
                         <p className="font-medium">Client:</p>
-                        <p>{projectData.client}</p>
+                        <p>{project.clientName}</p>
                       </div>
                       <div>
                         <p className="font-medium">Client Legal Entity:</p>
-                        <p>{projectData.clientLegalEntity}</p>
+                        <p>{project.clientLegalEntity}</p>
                       </div>
                       <div>
                         <p className="font-medium">Architect:</p>
-                        <p>{projectData.architect}</p>
+                        <p>{project.architect}</p>
                       </div>
                       <div>
                         <p className="font-medium">Bonds Required:</p>
-                        <p>{projectData.bonds ? "Yes" : "No"}</p>
+                        <p>{project.bondsRequired ? "Yes" : "No"}</p>
                       </div>
                     </div>
                   ) : (
@@ -100,7 +79,9 @@ export function PreviewStep({ formData }: PreviewStepProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Subcontractor Information</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    Subcontractor Information
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="font-medium">Company Name:</p>
@@ -126,16 +107,20 @@ export function PreviewStep({ formData }: PreviewStepProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Contract Details</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    Contract Details
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="font-medium">Cost Code:</p>
-                      <p>{formData.costCode || "Not specified"}</p>
+                      <p>{formData.costCode?.code || "Not specified"}</p>
                     </div>
                     <div>
                       <p className="font-medium">Contract Value:</p>
                       <p>
-                        {formData.contractValue ? `$${formData.contractValue.toLocaleString()}.00` : "Not specified"}
+                        {formData.contractValue
+                          ? `$${formData.contractValue.toLocaleString()}.00`
+                          : "Not specified"}
                       </p>
                     </div>
                     <div className="col-span-2">
@@ -146,21 +131,26 @@ export function PreviewStep({ formData }: PreviewStepProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Scope of Work</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    Scope of Work
+                  </h3>
                   {formData.scopes && formData.scopes.length > 0 ? (
                     <ol className="list-decimal pl-5 space-y-2 text-sm">
-                      {formData.scopes.map((scope: any, index: number) => (
+                      {formData.scopes.map((scope, index) => (
                         <li key={index}>{scope.text}</li>
                       ))}
                     </ol>
                   ) : (
-                    <p className="text-muted-foreground">No scope of work defined</p>
+                    <p className="text-muted-foreground">
+                      No scope of work defined
+                    </p>
                   )}
                 </div>
               </div>
             </CardContent>
           </Card>
 
+          {/* Download Preview */}
           <div className="flex justify-center">
             <Button className="gap-2">
               <Download className="h-4 w-4" />
@@ -173,16 +163,36 @@ export function PreviewStep({ formData }: PreviewStepProps) {
           {formData.attachments && formData.attachments.length > 0 ? (
             <ScrollArea className="h-[400px] rounded-md border">
               <div className="p-4 space-y-2">
-                {formData.attachments.map((attachment: any) => (
-                  <div key={attachment.id} className="flex items-center justify-between p-3 border rounded-md">
+                {formData.attachments.map((attachment) => (
+                  <div
+                    key={attachment.id}
+                    className="flex items-center justify-between p-3 border rounded-md"
+                  >
                     <div className="flex items-center gap-2">
                       <Paperclip className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">{attachment.name}</p>
-                        <p className="text-xs text-muted-foreground">{(attachment.size / 1024).toFixed(2)} KB</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(attachment.size / 1024).toFixed(2)} KB
+                        </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const getImageUrl = new URL(
+                          `${process.env.NEXT_PUBLIC_CONVEX_URL_SITE}/getImage`,
+                        );
+                        getImageUrl.searchParams.set(
+                          "storageId",
+                          attachment.url as Id<"_storage">,
+                        );
+
+                        const url = getImageUrl.href;
+                        window.open(url, "_blank");
+                      }}
+                    >
                       <FileText className="h-4 w-4 mr-2" />
                       Preview
                     </Button>
@@ -201,15 +211,34 @@ export function PreviewStep({ formData }: PreviewStepProps) {
       <div className="flex flex-col gap-2">
         <Label>After generating the subcontract:</Label>
         <div className="flex items-center gap-2 text-sm">
-          <input type="checkbox" id="send-docusign" className="rounded" />
+          <input
+            type="checkbox"
+            id="send-docusign"
+            className="rounded"
+            checked={formData.docusignSent}
+            onChange={() => {
+              updateFormData({
+                docusignSent: !formData.docusignSent,
+              });
+            }}
+          />
           <label htmlFor="send-docusign">Send to DocuSign for signature</label>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <input type="checkbox" id="save-draft" className="rounded" />
+          <input
+            type="checkbox"
+            id="save-draft"
+            className="rounded"
+            checked={formData.isDraft}
+            onChange={() =>
+              updateFormData({
+                isDraft: !formData.isDraft,
+              })
+            }
+          />
           <label htmlFor="save-draft">Save as draft for later editing</label>
         </div>
       </div>
     </div>
-  )
+  );
 }
-

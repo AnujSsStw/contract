@@ -130,7 +130,7 @@ export const generateScopeOfWork = action({
         aiScopeOfWork: parseJsonFromCodeBlock(response.output_text).scopeOfWork,
       });
 
-      return parseJsonFromCodeBlock(response.output_text);
+      return parseJsonFromCodeBlock(response.output_text).scopeOfWork;
     } catch (e) {
       console.error("Error generating subcontractor quote details:", e);
       throw new Error("Error generating subcontractor quote details");
