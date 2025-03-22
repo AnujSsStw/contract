@@ -2,6 +2,11 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
+const costCodesSchema = {
+  code: v.string(),
+  description: v.string(),
+};
+
 export const projectsSchema = {
   name: v.string(),
   number: v.string(),
@@ -53,9 +58,11 @@ export const subcontractsSchema = {
 
   //cost code
   costCode: v.optional(v.id("costCodes")),
+  costCodeData: v.optional(v.array(v.object(costCodesSchema))),
 
   //contract value
   contractValue: v.optional(v.number()),
+  contractValueText: v.optional(v.string()),
 
   //scope of work
   scopeOfWork: v.optional(
@@ -88,11 +95,6 @@ export const subcontractsSchema = {
 
   //docusign sent
   docusignSent: v.optional(v.boolean()),
-};
-
-const costCodesSchema = {
-  code: v.string(),
-  description: v.string(),
 };
 
 const scopeOfWorksSchema = {

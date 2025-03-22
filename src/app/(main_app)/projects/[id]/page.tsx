@@ -4,6 +4,7 @@ import {
   Edit,
   FileCodeIcon as FileContract,
   Plus,
+  Trash,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -22,6 +23,16 @@ import {
   preloadQuery,
 } from "convex/nextjs";
 import { redirect } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { deleteProject } from "@/components/project-card";
 
 export const metadata: Metadata = {
   title: "Project Details | Construction Contract Generator",
@@ -124,6 +135,33 @@ export default async function ProjectPage({
           </div>
         </div>
         <div className="flex gap-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <Trash className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Project</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this project?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <form
+                  action={async () => {
+                    "use server";
+                    await deleteProject(projectId);
+                  }}
+                >
+                  <Button type="submit" variant="destructive">
+                    Delete Project
+                  </Button>
+                </form>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button asChild variant="outline">
             <Link href={`/projects/new?id=${project._id}`}>
               <Edit className="mr-2 h-4 w-4" />

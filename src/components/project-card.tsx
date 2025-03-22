@@ -1,7 +1,7 @@
+import { Building2, FileCodeIcon as FileContract } from "lucide-react";
 import Link from "next/link";
-import { Building2, FileCodeIcon as FileContract, Trash } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { createNewSubcontract } from "@/app/(main_app)/action";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,11 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createNewSubcontract } from "@/app/action";
-import { fetchMutation } from "convex/nextjs";
+import { cn } from "@/lib/utils";
 import { api } from "@cvx/_generated/api";
-import { revalidatePath } from "next/cache";
 import { Id } from "@cvx/_generated/dataModel";
+import { fetchMutation } from "convex/nextjs";
+import { redirect } from "next/navigation";
 
 interface ProjectCardProps {
   name: string;
@@ -32,7 +32,7 @@ export const deleteProject = async (projectId: string) => {
   await fetchMutation(api.projects.deleteProject, {
     projectId: projectId as Id<"projects">,
   });
-  revalidatePath("/");
+  redirect("/");
 };
 
 export function ProjectCard({
@@ -79,18 +79,10 @@ export function ProjectCard({
       <CardFooter className="flex justify-between pt-4 border-t">
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link href={`/projects/${projectId}`}>View Details</Link>
+            <Link prefetch={true} href={`/projects/${projectId}`}>
+              View Details
+            </Link>
           </Button>
-          <form
-            action={async () => {
-              "use server";
-              await deleteProject(projectId);
-            }}
-          >
-            <Button variant="destructive" size="sm">
-              <Trash className="h-4 w-4" />
-            </Button>
-          </form>
         </div>
         <Button onClick={createNewSubcontract.bind(null, projectId)} size="sm">
           <FileContract className="mr-2 h-4 w-4" />
