@@ -1,8 +1,4 @@
-import {
-  Building2,
-  Download,
-  FileCodeIcon as FileContract,
-} from "lucide-react";
+import { Building2, FileCodeIcon as FileContract } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
