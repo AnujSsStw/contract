@@ -1,10 +1,11 @@
+import { Subcontract } from "@/app/(pdf)/latest/types";
+import { api } from "@cvx/_generated/api";
+import { Id } from "@cvx/_generated/dataModel";
 import chromium from "@sparticuz/chromium-min";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { PDFDocument } from "pdf-lib";
 import puppeteer from "puppeteer-core";
-import { Subcontract } from "@/app/(pdf)/latest/types";
 const isDev = process.env.NODE_ENV === "development";
-import { api } from "@cvx/_generated/api";
-import { fetchQuery } from "convex/nextjs";
 
 const chromiumPack =
   "https://github.com/Sparticuz/chromium/releases/download/v126.0.0/chromium-v126.0.0-pack.tar";
@@ -101,6 +102,14 @@ async function captureLatestPdfForDevice(updateState: Subcontract) {
   return pdfs;
 }
 
+function getAttachmentUrl(url: string) {
+  const getImageUrl = new URL(
+    `${process.env.NEXT_PUBLIC_CONVEX_URL_SITE}/getImage`,
+  );
+  getImageUrl.searchParams.set("storageId", url as Id<"_storage">);
+  return getImageUrl.href;
+}
+
 export async function POST(req: Request) {
   const { subcontractId } = await req.json();
   const subcontract = await fetchQuery(api.download.getSubcontractDetails, {
@@ -109,6 +118,9 @@ export async function POST(req: Request) {
 
   if (!subcontract) {
     return new Response("Subcontract not found", { status: 404 });
+  }
+  if (subcontract.subcontract.fileUrl) {
+    return new Response(subcontract.subcontract.fileUrl, { status: 200 });
   }
   const date = new Date(
     subcontract.subcontract._creationTime,
@@ -211,8 +223,49 @@ export async function POST(req: Request) {
     }
   }
 
+  // add attachments to the pdf
+  const attachments = subcontract.subcontract.attachments;
+  if (attachments) {
+    const attachmentPages = await Promise.all(
+      attachments.map(async (attachment, index) => {
+        const pdfDoc = await PDFDocument.load(getAttachmentUrl(attachment.url));
+        const pageCount = pdfDoc.getPageCount();
+        const pages = await mergedDoc.copyPages(
+          pdfDoc,
+          Array.from(Array(pageCount).keys()),
+        );
+        return {
+          index,
+          pages,
+        };
+      }),
+    );
+
+    // Maintain original order by sorting by index before adding pages
+    attachmentPages
+      .sort((a, b) => a.index - b.index)
+      .forEach(({ pages }) => {
+        pages.forEach((page) => mergedDoc.addPage(page));
+      });
+  }
+
   // Save the final merged PDF
   const mergedPdf = await mergedDoc.save();
+
+  const generateUploadUrl = await fetchMutation(api.storage.generateUploadUrl);
+  const result = await fetch(generateUploadUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/pdf" },
+    body: mergedPdf,
+  });
+
+  if (result.ok) {
+    const { storageId } = await result.json();
+    await fetchMutation(api.download.addSubcontractUrl, {
+      subcontractId,
+      url: storageId,
+    });
+  }
 
   return new Response(mergedPdf);
 }

@@ -10,12 +10,18 @@ import { FormData } from "../subcontract-wizard";
 import { useQuery } from "convex/react";
 import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
+import { SubcontractDownloadButton } from "@/components/subcontract-download-button";
 interface PreviewStepProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
+  subcontractId: Id<"subcontracts">;
 }
 
-export function PreviewStep({ formData, updateFormData }: PreviewStepProps) {
+export function PreviewStep({
+  formData,
+  updateFormData,
+  subcontractId,
+}: PreviewStepProps) {
   const projectData = formData.projectId ? formData.projectId : null;
   const project = useQuery(api.projects.getById, {
     id: projectData ? (projectData as Id<"projects">) : undefined,
@@ -152,10 +158,7 @@ export function PreviewStep({ formData, updateFormData }: PreviewStepProps) {
 
           {/* Download Preview */}
           <div className="flex justify-center">
-            <Button className="gap-2">
-              <Download className="h-4 w-4" />
-              Download Preview
-            </Button>
+            <SubcontractDownloadButton subcontractId={subcontractId} />
           </div>
         </TabsContent>
 

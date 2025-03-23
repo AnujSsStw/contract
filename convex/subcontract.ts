@@ -121,11 +121,13 @@ export const bulkUpdateOrCreate = mutation({
             costCode: data.costCode,
             currentStep: step,
             scopeOfWork: data.scopeOfWork,
+            costCodeData: data.costCodeData,
           });
           break;
         case "contract-value":
           await ctx.db.patch(subId, {
             contractValue: data.contractValue,
+            contractValueText: data.contractValueText,
             currentStep: step,
           });
           break;

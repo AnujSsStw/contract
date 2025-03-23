@@ -1,22 +1,5 @@
 import { v } from "convex/values";
-import { api, internal } from "./_generated/api";
-import { action, internalQuery, query } from "./_generated/server";
-import { Doc } from "./_generated/dataModel";
-
-export const download = action({
-  args: {
-    subcontractId: v.id("subcontracts"),
-  },
-  handler: async (ctx, args) => {
-    const { subcontractId } = args;
-    const data: { subcontract: Doc<"subcontracts">; project: Doc<"projects"> } =
-      await ctx.runQuery(api.download.getSubcontractDetails, {
-        subcontractId,
-      });
-
-    return data;
-  },
-});
+import { mutation, query } from "./_generated/server";
 
 export const getSubcontractDetails = query({
   args: {
@@ -43,5 +26,18 @@ export const getSubcontractDetails = query({
       project,
       user,
     };
+  },
+});
+
+export const addSubcontractUrl = mutation({
+  args: {
+    subcontractId: v.id("subcontracts"),
+    url: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { subcontractId, url } = args;
+    await ctx.db.patch(subcontractId, {
+      fileUrl: url,
+    });
   },
 });

@@ -2,27 +2,30 @@
 
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { useAction } from "convex/react";
-import { api } from "@cvx/_generated/api";
-import { Id } from "@cvx/_generated/dataModel";
+import { useState } from "react";
+
 export function SubcontractDownloadButton({
   subcontractId,
 }: {
   subcontractId: string;
 }) {
-  const action = useAction(api.download.download);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
-    const response = await action({
-      subcontractId: subcontractId as Id<"subcontracts">,
+    setIsDownloading(true);
+    const res = await fetch(`/api/pdf`, {
+      method: "POST",
+      body: JSON.stringify({ subcontractId }),
     });
+    const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
+    setIsDownloading(false);
   };
   return (
-    <Button variant="outline" onClick={handleDownload}>
+    <Button variant="outline" disabled={isDownloading} onClick={handleDownload}>
       <Download className="mr-2 h-4 w-4" />
-      Download
+      {isDownloading ? "Downloading..." : "Download"}
     </Button>
   );
 }

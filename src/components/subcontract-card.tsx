@@ -2,7 +2,6 @@ import {
   Building2,
   Download,
   FileCodeIcon as FileContract,
-  Trash,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -16,10 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { api } from "@cvx/_generated/api";
-import { Id } from "@cvx/_generated/dataModel";
-import { fetchMutation } from "convex/nextjs";
-import { revalidatePath } from "next/cache";
+import { SubcontractDownloadButton } from "./subcontract-download-button";
 
 interface SubcontractCardProps {
   title: string;
@@ -82,27 +78,10 @@ export function SubcontractCard({
           <Button asChild variant="outline" size="sm">
             <Link href={`/subcontracts/${id}`}>View Details</Link>
           </Button>
-          <form
-            action={async () => {
-              "use server";
-
-              await fetchMutation(api.subcontract.deleteSubcontract, {
-                subId: id as Id<"subcontracts">,
-              });
-              revalidatePath(`/projects/[id]`);
-            }}
-          >
-            <Button variant="outline" size="sm">
-              <Trash className="h-4 w-4" />
-            </Button>
-          </form>
         </div>
-        {status !== "draft" && (
-          <Button size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Download
-          </Button>
-        )}
+        {status !== "draft" && <SubcontractDownloadButton subcontractId={id} />}
+
+        {/* TODO: fix this */}
         {status === "draft" && (
           <Button asChild size="sm">
             <Link href={`/subcontracts/${id}/edit`}>Continue Editing</Link>

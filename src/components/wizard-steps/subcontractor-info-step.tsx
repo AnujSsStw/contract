@@ -53,7 +53,6 @@ export function SubcontractorInfoStep({
     try {
       setIsProcessing(true);
       const base64Pdf = await convertPdfToBase64(file);
-      console.log(base64Pdf);
 
       // Call the Convex action with the base64 PDF
       const extractedData = await extractSubcontractorInfo({
@@ -73,6 +72,7 @@ export function SubcontractorInfoStep({
         aiResponse: JSON.stringify(extractedData),
         aiScopeOfWork: extractedData.scopeOfWork,
       });
+
       setIsExtracted(true);
       toast.success("Subcontractor information extracted successfully");
     } catch (error) {
@@ -144,7 +144,7 @@ export function SubcontractorInfoStep({
             <Label htmlFor="subcontractor-name">Company Name</Label>
             <Input
               id="subcontractor-name"
-              value={formData.subcontractorName}
+              value={formData.subcontractorName || ""}
               onChange={(e) =>
                 handleInputChange("subcontractorName", e.target.value)
               }
@@ -155,7 +155,7 @@ export function SubcontractorInfoStep({
             <Label htmlFor="subcontractor-contact">Contact Name</Label>
             <Input
               id="subcontractor-contact"
-              value={formData.subcontractorContact}
+              value={formData.subcontractorContact || ""}
               onChange={(e) =>
                 handleInputChange("subcontractorContact", e.target.value)
               }
@@ -168,7 +168,7 @@ export function SubcontractorInfoStep({
           <Label htmlFor="subcontractor-address">Address</Label>
           <Textarea
             id="subcontractor-address"
-            value={formData.subcontractorAddress}
+            value={formData.subcontractorAddress || ""}
             onChange={(e) =>
               handleInputChange("subcontractorAddress", e.target.value)
             }
@@ -182,7 +182,7 @@ export function SubcontractorInfoStep({
             <Label htmlFor="subcontractor-phone">Phone</Label>
             <Input
               id="subcontractor-phone"
-              value={formData.subcontractorPhone}
+              value={formData.subcontractorPhone || ""}
               onChange={(e) =>
                 handleInputChange("subcontractorPhone", e.target.value)
               }
@@ -193,7 +193,7 @@ export function SubcontractorInfoStep({
             <Label htmlFor="subcontractor-email">Email</Label>
             <Input
               id="subcontractor-email"
-              value={formData.subcontractorEmail}
+              value={formData.subcontractorEmail || ""}
               onChange={(e) =>
                 handleInputChange("subcontractorEmail", e.target.value)
               }

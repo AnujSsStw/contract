@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@cvx/_generated/api";
+import { Id } from "@cvx/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FormData } from "../subcontract-wizard";
 import { useEffect } from "react";
@@ -15,13 +16,6 @@ interface CostCodeStepProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
 }
-
-export type CostCode = {
-  _id: string;
-  description: string;
-  code: string;
-  _creationTime: number;
-};
 
 export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -44,7 +38,7 @@ export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
     ) || [];
 
   const handleCostCodeSelect = (costCode: string) => {
-    setSelectedCostCode(costCode);
+    setSelectedCostCode(costCode as Id<"costCodes">);
     updateFormData({
       costCode: costCodes?.find((code) => code._id === costCode),
     });

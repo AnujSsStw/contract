@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, Edit, FileText } from "lucide-react";
+import { ArrowLeft, Download, Edit, FileText, Trash } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -6,12 +6,22 @@ import { SubcontractAttachmentsCard } from "@/components/subcontract-attachments
 import { SubcontractDetailsCard } from "@/components/subcontract-details-card";
 import { SubcontractScopeCard } from "@/components/subcontract-scope-card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
-import { fetchQuery } from "convex/nextjs";
-
+import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { redirect } from "next/navigation";
+import { SubcontractDownloadButton } from "@/components/subcontract-download-button";
 export const metadata: Metadata = {
   title: "Subcontract Details | Construction Contract Generator",
   description: "View and manage subcontract details",
@@ -41,7 +51,7 @@ export default async function SubcontractPage({
       <div className="container py-8">
         <div className="flex items-center mb-8">
           <Button asChild variant="ghost" size="sm" className="mr-4">
-            <Link href="/dashboard">
+            <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Link>
@@ -54,18 +64,12 @@ export default async function SubcontractPage({
             been removed.
           </p>
           <Button asChild>
-            <Link href="/dashboard">Return to Dashboard</Link>
+            <Link href="/">Return to Dashboard</Link>
           </Button>
         </div>
       </div>
     );
   }
-
-  // const statusColors = {
-  //   draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
-  //   exported: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-  //   // signed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-  // };
 
   return (
     <div className="container py-8">
@@ -82,29 +86,44 @@ export default async function SubcontractPage({
               <h1 className="text-3xl font-bold tracking-tight">
                 {subcontract.projectName}
               </h1>
-              {/* <Badge
-                className={
-                  subcontract.isDraft === undefined
-                    ? statusColors.draft
-                    : subcontract.isDraft
-                      ? statusColors.draft
-                      : statusColors.exported
-                }
-              >
-                {subcontract.isDraft === undefined
-                  ? "Draft"
-                  : subcontract.isDraft
-                    ? "Draft"
-                    : "Exported"}
-              </Badge> */}
             </div>
             <p className="text-muted-foreground">{subcontract.project?.name}</p>
           </div>
         </div>
         <div className="flex gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Trash className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Subcontract</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this subcontract?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <form
+                  action={async () => {
+                    "use server";
+
+                    await fetchMutation(api.subcontract.deleteSubcontract, {
+                      subId: id as Id<"subcontracts">,
+                    });
+                    redirect(`/`);
+                  }}
+                >
+                  <Button variant="outline" size="sm">
+                    Delete
+                  </Button>
+                </form>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           {
             <Button asChild variant="outline">
-              {/* TODO: add edit page */}
               {/* /subcontracts/new?subId=${d}&step=0&projectId=${projectId} */}
               <Link
                 href={`/subcontracts/new?subId=${id}&step=0&projectId=${subcontract.projectId}&fromEdit=true`}
@@ -115,10 +134,7 @@ export default async function SubcontractPage({
             </Button>
           }
           {/* TODO: add download */}
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Download
-          </Button>
+          <SubcontractDownloadButton subcontractId={id} />
           {/* {subcontract.isDraft && (
             <Button asChild>
               <Link href={`/subcontracts/${id}/send`}>

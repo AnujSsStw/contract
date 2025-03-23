@@ -21,10 +21,7 @@ import {
 } from "@/components/ui/card";
 import { AttachmentsStep } from "@/components/wizard-steps/attachments-step";
 import { ContractValueStep } from "@/components/wizard-steps/contract-value-step";
-import {
-  CostCode,
-  CostCodeStep,
-} from "@/components/wizard-steps/cost-code-step";
+import { CostCodeStep } from "@/components/wizard-steps/cost-code-step";
 import { PreviewStep } from "@/components/wizard-steps/preview-step";
 import { ProjectInfoStep } from "@/components/wizard-steps/project-info-step";
 import { ScopeOfWorkStep } from "@/components/wizard-steps/scope-of-work-step";
@@ -33,10 +30,10 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { api } from "@cvx/_generated/api";
-import { useMutation, useQuery } from "convex/react";
-import { Id } from "@cvx/_generated/dataModel";
 import { Attachment } from "@/components/wizard-steps/attachments-step";
+import { api } from "@cvx/_generated/api";
+import { DataModel, Id } from "@cvx/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 const steps = [
   { id: "project-info", title: "Project Information", icon: Building2 },
@@ -64,7 +61,7 @@ export type FormData = {
   subcontractorContact: string | undefined;
   subcontractorPhone: string | undefined;
   subcontractorEmail: string | undefined;
-  costCode: CostCode | null;
+  costCode: DataModel["costCodes"]["document"] | null;
   contractValue: number | undefined;
   contractValueText: string | undefined;
   scopes: { type: "manual" | "suggested" | "ai"; text: string }[] | undefined;
@@ -196,6 +193,12 @@ export function SubcontractWizard({
         step: "cost-code",
         data: {
           costCode: formData.costCode._id as Id<"costCodes">,
+          costCodeData: [
+            {
+              code: formData.costCode.code,
+              description: formData.costCode.description,
+            },
+          ],
           scopeOfWork:
             fromEdit === "true" &&
             dataFromDb?.costCode?._id !== formData.costCode._id
@@ -211,7 +214,10 @@ export function SubcontractWizard({
       await createSubcontract({
         subId: id,
         step: "contract-value",
-        data: { contractValue: formData.contractValue },
+        data: {
+          contractValue: formData.contractValue,
+          contractValueText: formData.contractValueText,
+        },
       });
     } else if (currentStep === 4) {
       if (!formData.scopes) {
@@ -242,6 +248,7 @@ export function SubcontractWizard({
             type: a.type,
             size: a.size,
             url: a.url as string,
+            order: a.order,
           })),
         },
       });
@@ -382,7 +389,11 @@ export function SubcontractWizard({
             />
           )}
           {currentStep === 6 && subId && formData.projectId && (
-            <PreviewStep formData={formData} updateFormData={updateFormData} />
+            <PreviewStep
+              formData={formData}
+              updateFormData={updateFormData}
+              subcontractId={subId as Id<"subcontracts">}
+            />
           )}
           {currentStep > 0 && !subId && (
             <div className="text-center py-8 text-muted-foreground">

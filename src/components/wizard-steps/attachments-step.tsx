@@ -20,6 +20,7 @@ interface AttachmentsStepProps {
 
 export interface Attachment {
   id: string;
+  order: number;
   name: string;
   size: number;
   type: string;
@@ -40,8 +41,9 @@ export function AttachmentsStep({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newAttachments = Array.from(e.target.files).map((file) => ({
+      const newAttachments = Array.from(e.target.files).map((file, index) => ({
         id: Math.random().toString(36).substring(2, 9),
+        order: index,
         name: file.name,
         size: file.size,
         type: file.type,

@@ -72,7 +72,7 @@ export default async function ProjectPage({
       <div className="container py-8">
         <div className="flex items-center mb-8">
           <Button asChild variant="ghost" size="sm" className="mr-4">
-            <Link href="/dashboard">
+            <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Link>

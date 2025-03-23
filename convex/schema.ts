@@ -46,7 +46,7 @@ export const subcontractsSchema = {
   // subcontractorId: v.id("users"),
 
   //subcontractor quote details
-  fileUrl: v.optional(v.string()), //if the subcontractor quote is uploaded as a file
+  fileUrl: v.optional(v.string()), //if the subcontractor quote is uploaded as a file //TODO: remove this
   companyName: v.optional(v.string()),
   contactName: v.optional(v.string()),
   companyAddress: v.optional(v.string()),
@@ -83,6 +83,7 @@ export const subcontractsSchema = {
         size: v.number(),
         type: v.string(),
         url: v.string(),
+        order: v.number(),
       }),
     ),
   ),
