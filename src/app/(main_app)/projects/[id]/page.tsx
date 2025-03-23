@@ -9,20 +9,13 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { NewSubcontractButton } from "@/components/new-subcontract-button";
+import { deleteProject } from "@/components/project-card";
 import { ProjectDetailsCard } from "@/components/project-details-card";
 import { SubcontractCard } from "@/components/subcontract-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@cvx/_generated/api";
-import { Id } from "@cvx/_generated/dataModel";
-import {
-  fetchMutation,
-  preloadedQueryResult,
-  preloadQuery,
-} from "convex/nextjs";
-import { redirect } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -32,14 +25,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { deleteProject } from "@/components/project-card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api } from "@cvx/_generated/api";
+import { Id } from "@cvx/_generated/dataModel";
+import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
 
 export const metadata: Metadata = {
   title: "Project Details | Construction Contract Generator",
   description: "View and manage project details",
 };
 
-// Mock function to get project data
 async function getProjectData(id: Id<"projects">) {
   const preloaded = await preloadQuery(api.projects.getById, { id });
 
@@ -91,13 +86,6 @@ export default async function ProjectPage({
       </div>
     );
   }
-
-  const createSubcontract = async () => {
-    "use server";
-
-    const d = await fetchMutation(api.subcontract.create);
-    redirect(`/subcontracts/new?subId=${d}`);
-  };
 
   const statusColors = {
     active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
@@ -168,10 +156,10 @@ export default async function ProjectPage({
               Edit Project
             </Link>
           </Button>
-          <Button onClick={createSubcontract}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Subcontract
-          </Button>
+          <NewSubcontractButton
+            title="New Subcontract"
+            projectId={project._id}
+          />
         </div>
       </div>
 
@@ -227,12 +215,10 @@ export default async function ProjectPage({
                     This project doesn&apos;t have any subcontracts yet. Create
                     your first subcontract to get started.
                   </p>
-                  <Button asChild>
-                    <Link href={`/subcontracts/new?project=${project._id}`}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Create Subcontract
-                    </Link>
-                  </Button>
+                  <NewSubcontractButton
+                    title="Create Subcontract"
+                    projectId={project._id}
+                  />
                 </CardContent>
               </Card>
             )}

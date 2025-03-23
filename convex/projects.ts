@@ -60,7 +60,19 @@ export const getById = query({
 });
 
 export const update = mutation({
-  args: { id: v.id("projects"), data: v.object(projectsSchema) },
+  args: {
+    id: v.id("projects"),
+    data: v.object({
+      ...projectsSchema,
+      status: v.optional(
+        v.union(
+          v.literal("planning"),
+          v.literal("active"),
+          v.literal("completed"),
+        ),
+      ),
+    }),
+  },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, args.data);
   },

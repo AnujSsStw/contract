@@ -35,12 +35,14 @@ import { api } from "@cvx/_generated/api";
 import { DataModel, Id } from "@cvx/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
+import { ExtraInfoStep } from "./wizard-steps/extra-info-step";
 const steps = [
   { id: "project-info", title: "Project Information", icon: Building2 },
   { id: "subcontractor-info", title: "Subcontractor Quote", icon: FileText },
   { id: "cost-code", title: "Cost Code", icon: FileText },
   { id: "contract-value", title: "Contract Value", icon: FileText },
   { id: "scope-of-work", title: "Scope of Work", icon: FileText },
+  { id: "extra-info", title: "Extra Information", icon: FileText },
   { id: "attachments", title: "Upload Attachments", icon: Upload },
   { id: "preview", title: "Preview & Generate", icon: Check },
 ];
@@ -72,6 +74,9 @@ export type FormData = {
 
   isDraft: boolean;
   docusignSent: boolean;
+
+  exclusions: string[] | undefined;
+  costBreakdown: string[] | undefined;
 };
 
 export function SubcontractWizard({
@@ -107,6 +112,8 @@ export function SubcontractWizard({
     aiScopeOfWork: undefined,
     isDraft: false,
     docusignSent: false,
+    exclusions: [],
+    costBreakdown: [],
   });
   const dataFromDb = useQuery(api.subcontract.get, {
     subId: subId as Id<"subcontracts">,
@@ -135,6 +142,8 @@ export function SubcontractWizard({
         aiScopeOfWork: dataFromDb.aiScopeOfWork || undefined,
         isDraft: dataFromDb.isDraft ?? false,
         docusignSent: dataFromDb.docusignSent ?? false,
+        exclusions: dataFromDb.exclusions,
+        costBreakdown: dataFromDb.costBreakdown,
       });
     }
   }, [dataFromDb]);
@@ -235,6 +244,20 @@ export function SubcontractWizard({
         data: { scopeOfWork: formData.scopes },
       });
     } else if (currentStep === 5) {
+      if (!formData.exclusions || !formData.costBreakdown) {
+        toast.warning(
+          "Moving on to the next step without exclusions or cost breakdown",
+        );
+      }
+      await createSubcontract({
+        subId: id,
+        step: "extra-info",
+        data: {
+          exclusions: formData.exclusions,
+          costBreakdown: formData.costBreakdown,
+        },
+      });
+    } else if (currentStep === 6) {
       if (!formData.attachments) {
         toast.warning("Moving on to the next step without attachments");
       }
@@ -252,7 +275,7 @@ export function SubcontractWizard({
           })),
         },
       });
-    } else if (currentStep === 6) {
+    } else if (currentStep === 7) {
       await createSubcontract({
         subId: id,
         step: "preview",
@@ -278,7 +301,6 @@ export function SubcontractWizard({
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
-  // TODO: fix in all steps
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
@@ -287,7 +309,7 @@ export function SubcontractWizard({
   return (
     <div className="space-y-8">
       <nav aria-label="Progress">
-        <ol className="grid grid-cols-1 md:grid-cols-7 gap-2">
+        <ol className="grid grid-cols-1 md:grid-cols-8 gap-2">
           {steps.map((step, index) => (
             <li
               key={step.id}
@@ -346,9 +368,10 @@ export function SubcontractWizard({
             {currentStep === 3 && "Enter the contract value"}
             {currentStep === 4 &&
               "Define the scope of work for this subcontract"}
-            {currentStep === 5 &&
+            {currentStep === 5 && "Enter extra information"}
+            {currentStep === 6 &&
               "Upload additional attachments for the subcontract"}
-            {currentStep === 6 && "Review and generate the subcontract"}
+            {currentStep === 7 && "Review and generate the subcontract"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -382,13 +405,19 @@ export function SubcontractWizard({
               subId={subId}
             />
           )}
-          {currentStep === 5 && subId && (
+          {currentStep === 5 && (
+            <ExtraInfoStep
+              formData={formData}
+              updateFormData={updateFormData}
+            />
+          )}
+          {currentStep === 6 && subId && (
             <AttachmentsStep
               formData={formData}
               updateFormData={updateFormData}
             />
           )}
-          {currentStep === 6 && subId && formData.projectId && (
+          {currentStep === 7 && subId && formData.projectId && (
             <PreviewStep
               formData={formData}
               updateFormData={updateFormData}
@@ -417,8 +446,13 @@ export function SubcontractWizard({
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button disabled={!subId} onClick={nextStep}>
+            <Button
+              disabled={!subId}
+              onClick={nextStep}
+              className="flex items-center gap-2"
+            >
               Generate Subcontract {formData.isDraft ? "(Draft)" : ""}
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           )}
         </CardFooter>

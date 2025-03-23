@@ -43,6 +43,7 @@ export const get = query({
       return null;
     }
     const project = (await ctx.db.get(subcontract.projectId)) || null;
+    // TODO: fix in all steps
     if (!subcontract.costCode) {
       return {
         ...subcontract,
@@ -137,6 +138,13 @@ export const bulkUpdateOrCreate = mutation({
             currentStep: step,
           });
           break;
+        case "extra-info":
+          await ctx.db.patch(subId, {
+            exclusions: data.exclusions,
+            costBreakdown: data.costBreakdown,
+            currentStep: step,
+          });
+          break;
         case "attachments":
           await ctx.db.patch(subId, {
             attachments: data.attachments,
@@ -145,7 +153,8 @@ export const bulkUpdateOrCreate = mutation({
           break;
         case "preview":
           await ctx.db.patch(subId, {
-            ...data,
+            isDraft: data.isDraft,
+            docusignSent: data.docusignSent,
             currentStep: step,
           });
 

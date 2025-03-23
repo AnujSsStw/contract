@@ -1,9 +1,10 @@
-import { ArrowLeft, Download, Edit, FileText, Trash } from "lucide-react";
+import { ArrowLeft, Edit, FileText, Trash } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { SubcontractAttachmentsCard } from "@/components/subcontract-attachments-card";
 import { SubcontractDetailsCard } from "@/components/subcontract-details-card";
+import { SubcontractDownloadButton } from "@/components/subcontract-download-button";
 import { SubcontractScopeCard } from "@/components/subcontract-scope-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +22,7 @@ import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
-import { SubcontractDownloadButton } from "@/components/subcontract-download-button";
+
 export const metadata: Metadata = {
   title: "Subcontract Details | Construction Contract Generator",
   description: "View and manage subcontract details",
@@ -45,6 +46,7 @@ export default async function SubcontractPage({
 }) {
   const id = (await params).id;
   const subcontract = await getSubcontractData(id);
+  console.log(subcontract);
 
   if (!subcontract) {
     return (
@@ -124,7 +126,6 @@ export default async function SubcontractPage({
           </Dialog>
           {
             <Button asChild variant="outline">
-              {/* /subcontracts/new?subId=${d}&step=0&projectId=${projectId} */}
               <Link
                 href={`/subcontracts/new?subId=${id}&step=0&projectId=${subcontract.projectId}&fromEdit=true`}
               >
@@ -133,7 +134,6 @@ export default async function SubcontractPage({
               </Link>
             </Button>
           }
-          {/* TODO: add download */}
           <SubcontractDownloadButton subcontractId={id} />
           {/* {subcontract.isDraft && (
             <Button asChild>

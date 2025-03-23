@@ -1,7 +1,6 @@
 import { Building2, FileCodeIcon as FileContract } from "lucide-react";
 import Link from "next/link";
 
-import { createNewSubcontract } from "@/app/(main_app)/action";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +14,7 @@ import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
 import { fetchMutation } from "convex/nextjs";
 import { redirect } from "next/navigation";
-
+import { NewSubcontractButton } from "./new-subcontract-button";
 interface ProjectCardProps {
   name: string;
   number: string;
@@ -84,10 +83,7 @@ export function ProjectCard({
             </Link>
           </Button>
         </div>
-        <Button onClick={createNewSubcontract.bind(null, projectId)} size="sm">
-          <FileContract className="mr-2 h-4 w-4" />
-          New Subcontract
-        </Button>
+        <NewSubcontractButton title="New Subcontract" projectId={projectId} />
       </CardFooter>
     </Card>
   );

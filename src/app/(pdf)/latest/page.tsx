@@ -329,7 +329,7 @@ export default async function Latest({ searchParams }: PageProps) {
       )}
 
       {pageNumber === 7 && (
-        <div className="flex flex-col gap-4 text-justify">
+        <div className={`flex flex-col gap-4 text-justify break-before-page`}>
           <div className="mt-8">
             <p className="font-bold mb-4">
               IN WITNESS WHEREOF, WE HAVE CAUSED THE INSTRUMENT TO BE EXECUTED
@@ -484,7 +484,7 @@ export default async function Latest({ searchParams }: PageProps) {
       )}
 
       {pageNumber === 8 && (
-        <div className="flex flex-col gap-4 text-justify">
+        <div className={`flex flex-col gap-4 text-justify break-before-page`}>
           <p className="font-bold mb-4">
             IN WITNESS WHEREOF, WE HAVE CAUSED THE INSTRUMENT TO BE EXECUTED AND
             SEALED BY OUR DULY AUTHORIZED LEGAL REPRESENTATIVES.

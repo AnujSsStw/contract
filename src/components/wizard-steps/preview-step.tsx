@@ -1,16 +1,16 @@
 "use client";
-import { Download, FileText, Paperclip } from "lucide-react";
+import { FileText, Paperclip } from "lucide-react";
 
+import { SubcontractDownloadButton } from "@/components/subcontract-download-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FormData } from "../subcontract-wizard";
-import { useQuery } from "convex/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
-import { SubcontractDownloadButton } from "@/components/subcontract-download-button";
+import { useQuery } from "convex/react";
+import { FormData } from "../subcontract-wizard";
 interface PreviewStepProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;

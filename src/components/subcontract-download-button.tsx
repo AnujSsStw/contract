@@ -17,6 +17,7 @@ export function SubcontractDownloadButton({
       method: "POST",
       body: JSON.stringify({ subcontractId }),
     });
+
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");

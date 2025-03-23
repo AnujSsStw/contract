@@ -17,6 +17,13 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Form,
   FormControl,
   FormField,
@@ -45,6 +52,9 @@ const projectSchema = z.object({
   architect: z.string().min(1, { message: "Architect is required" }),
   bondsRequired: z.boolean(),
   description: z.string().min(1, { message: "Description is required" }),
+  status: z
+    .union([z.literal("planning"), z.literal("active"), z.literal("completed")])
+    .default("planning"),
 });
 
 export default function NewProjectPage() {
@@ -80,6 +90,7 @@ export default function NewProjectPage() {
       form.setValue("architect", projectData.architect);
       form.setValue("bondsRequired", projectData.bondsRequired);
       form.setValue("description", projectData.description);
+      form.setValue("status", projectData.status ?? "planning");
     }
   }, [projectData]);
 
@@ -98,6 +109,7 @@ export default function NewProjectPage() {
             bondsRequired: values.bondsRequired,
             description: values.description,
             subcontractCount: projectData?.subcontractCount ?? 0,
+            status: values.status,
           },
         });
       } else {
@@ -299,6 +311,34 @@ export default function NewProjectPage() {
                   </FormItem>
                 )}
               />
+
+              {projectId && (
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="planning">Planning</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline" asChild>

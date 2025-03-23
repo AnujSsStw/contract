@@ -36,6 +36,7 @@ export const stepSchema = v.union(
   v.literal("cost-code"),
   v.literal("contract-value"),
   v.literal("scope-of-work"),
+  v.literal("extra-info"),
   v.literal("attachments"),
   v.literal("preview"),
 );
@@ -73,6 +74,12 @@ export const subcontractsSchema = {
       }),
     ),
   ),
+
+  //exclusions
+  exclusions: v.optional(v.array(v.string())),
+
+  //cost_breakdown
+  costBreakdown: v.optional(v.array(v.string())),
 
   //attachments
   attachments: v.optional(

@@ -107,6 +107,8 @@ function getAttachmentUrl(url: string) {
     `${process.env.NEXT_PUBLIC_CONVEX_URL_SITE}/getImage`,
   );
   getImageUrl.searchParams.set("storageId", url as Id<"_storage">);
+  console.log("getAttachmentUrl", getImageUrl.href);
+
   return getImageUrl.href;
 }
 
@@ -119,9 +121,14 @@ export async function POST(req: Request) {
   if (!subcontract) {
     return new Response("Subcontract not found", { status: 404 });
   }
+  // if the subcontract has a fileUrl, return the pdf
   if (subcontract.subcontract.fileUrl) {
-    return new Response(subcontract.subcontract.fileUrl, { status: 200 });
+    const fileUrl = await fetch(subcontract.subcontract.fileUrl);
+    const fileBuffer = await fileUrl.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(fileBuffer);
+    return new Response(await pdfDoc.save());
   }
+
   const date = new Date(
     subcontract.subcontract._creationTime,
   ).toLocaleDateString("en-US", {
@@ -139,9 +146,9 @@ export async function POST(req: Request) {
     subcontractor_address_line_2: "",
     subcontractor_phone: subcontract.subcontract.contactPhone || "",
     contract_value: subcontract.subcontract.contractValueText || "",
-    cost_breakdown: [],
+    cost_breakdown: subcontract.subcontract.costBreakdown || [],
     cost_code: subcontract.subcontract.costCodeData?.map((c) => c.code) || [],
-    exclusion: [],
+    exclusion: subcontract.subcontract.exclusions || [],
     project_name: subcontract.project.name,
     project_address: subcontract.project.address,
     project_generated_user: subcontract.user.name || "",
@@ -228,7 +235,10 @@ export async function POST(req: Request) {
   if (attachments) {
     const attachmentPages = await Promise.all(
       attachments.map(async (attachment, index) => {
-        const pdfDoc = await PDFDocument.load(getAttachmentUrl(attachment.url));
+        const uploadedPdf = await fetch(getAttachmentUrl(attachment.url)).then(
+          (res) => res.arrayBuffer(),
+        );
+        const pdfDoc = await PDFDocument.load(uploadedPdf);
         const pageCount = pdfDoc.getPageCount();
         const pages = await mergedDoc.copyPages(
           pdfDoc,
@@ -261,9 +271,12 @@ export async function POST(req: Request) {
 
   if (result.ok) {
     const { storageId } = await result.json();
+    const url = new URL(`${process.env.NEXT_PUBLIC_CONVEX_URL_SITE}/getImage`);
+    url.searchParams.set("storageId", storageId as Id<"_storage">);
+
     await fetchMutation(api.download.addSubcontractUrl, {
       subcontractId,
-      url: storageId,
+      url: url.href,
     });
   }
 
