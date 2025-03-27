@@ -2,7 +2,7 @@ import { Subcontract } from "@/app/(pdf)/latest/types";
 import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
 import chromium from "@sparticuz/chromium-min";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { fetchQuery } from "convex/nextjs";
 import { PDFDocument } from "pdf-lib";
 import puppeteer from "puppeteer-core";
 const isDev = process.env.NODE_ENV === "development";
@@ -252,24 +252,6 @@ export async function POST(req: Request) {
 
   // Save the final merged PDF
   const mergedPdf = await mergedDoc.save();
-
-  const generateUploadUrl = await fetchMutation(api.storage.generateUploadUrl);
-  const result = await fetch(generateUploadUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/pdf" },
-    body: mergedPdf,
-  });
-
-  if (result.ok) {
-    const { storageId } = await result.json();
-    const url = new URL(`${process.env.NEXT_PUBLIC_CONVEX_URL_SITE}/getImage`);
-    url.searchParams.set("storageId", storageId as Id<"_storage">);
-
-    await fetchMutation(api.download.addSubcontractUrl, {
-      subcontractId,
-      url: url.href,
-    });
-  }
 
   console.timeEnd("start");
 

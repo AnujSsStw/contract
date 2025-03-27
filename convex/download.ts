@@ -1,6 +1,13 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import {
+  action,
+  internalAction,
+  internalMutation,
+  mutation,
+  query,
+} from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 export const getSubcontractDetails = query({
   args: {
@@ -47,7 +54,26 @@ export const getSubcontractDetails = query({
   },
 });
 
-export const addSubcontractUrl = mutation({
+export const generateUploadUrl = action({
+  args: {
+    subcontractId: v.id("subcontracts"),
+    mergedPdf: v.any(),
+  },
+  handler: async (ctx, args) => {
+    // Store the image in Convex
+    const storageId: Id<"_storage"> = await ctx.storage.store(args.mergedPdf);
+
+    const url = new URL(`${process.env.NEXT_PUBLIC_CONVEX_URL_SITE}/getImage`);
+    url.searchParams.set("storageId", storageId as Id<"_storage">);
+
+    await ctx.scheduler.runAfter(0, internal.download.addSubcontractUrl, {
+      subcontractId: args.subcontractId,
+      url: url.href,
+    });
+  },
+});
+
+export const addSubcontractUrl = internalMutation({
   args: {
     subcontractId: v.id("subcontracts"),
     url: v.string(),
@@ -59,3 +85,13 @@ export const addSubcontractUrl = mutation({
     });
   },
 });
+
+// export const mutationThatSchedulesAction = mutation({
+//   args: { subcontractId: v.id("subcontracts"), mergedPdf: v.any() },
+//   handler: async (ctx, { subcontractId, mergedPdf }) => {
+//     await ctx.scheduler.runAfter(0, internal.download.generateUploadUrl, {
+//       subcontractId,
+//       mergedPdf,
+//     });
+//   },
+// });

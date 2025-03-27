@@ -1,6 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+// import { api } from "@cvx/_generated/api";
+// import { Id } from "@cvx/_generated/dataModel";
+// import { useAction } from "convex/react";
 import { Download } from "lucide-react";
 import { useState } from "react";
 
@@ -10,6 +13,7 @@ export function SubcontractDownloadButton({
   subcontractId: string;
 }) {
   const [isDownloading, setIsDownloading] = useState(false);
+  // const store = useAction(api.download.generateUploadUrl);
 
   const handleDownload = async () => {
     setIsDownloading(true);
@@ -19,6 +23,7 @@ export function SubcontractDownloadButton({
     });
 
     const blob = await res.blob();
+
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
     setIsDownloading(false);
