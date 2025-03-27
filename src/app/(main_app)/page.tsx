@@ -101,6 +101,7 @@ export default async function Home() {
                   subcontractor={subcontract.companyName || ""}
                   value={subcontract.contractValue || 0}
                   status={subcontract.isDraft ? "draft" : "exported"}
+                  projectId={subcontract.projectId ?? ""}
                 />
               ))}
               <Card className="flex flex-col items-center justify-center h-full min-h-[220px] border-dashed">
