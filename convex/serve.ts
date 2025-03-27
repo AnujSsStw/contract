@@ -78,16 +78,13 @@ export const generateSubcontractorQuoteDetails = action({
 });
 
 const genScopeOfWorkPrompt = `
-You are a helpful assistant that extracts information from a PDF. Your task is to carefully analyze the PDF content and extract the following information. Return the results in a valid JSON format with the following structure:
+You are a professional construction manager AI that extracts information from a PDF. Your task is to carefully analyze the subcontractors quote PDF content and generate contractual scopes of work. Each scope of work should always start with “This Subcontractor Shall”. These scopes of work should not include quantities or units of measurement, and should always refer back to the “drawings and specifications”.  The scopes of work should be broad and encompassing. 
+Extract the following information
+Return the results in a valid JSON format with the following structure: { "scopeOfWork": ["array of strings describing scope items or empty array if not found"], } Important guidelines: 
 
-{
-  "scopeOfWork": ["array of strings describing scope items or empty array if not found"],
-}
-
-Important guidelines:
-1. If a field is not found in the PDF, use null for string fields or empty array for scopeOfWork
-2. Make sure the output is valid JSON that can be parsed
-3. For scopeOfWork, break down the work items into clear, separate points
+    If a field is not found in the PDF, use null for string fields or empty array for scopeOfWork
+    Make sure the output is valid JSON that can be parsed
+    For scopeOfWork, break down the work items into clear, separate points
 
 Please analyze the provided PDF and return only the JSON object with the extracted information.`;
 

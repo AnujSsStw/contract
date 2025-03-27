@@ -16,13 +16,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -190,7 +190,7 @@ export default function NewProjectPage() {
                     <FormItem>
                       <FormLabel>Project Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="PRJ-2023-001" {...field} />
+                        <Input placeholder="123456" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -312,7 +312,7 @@ export default function NewProjectPage() {
                 )}
               />
 
-              {projectId && (
+              {/* {projectId && (
                 <FormField
                   control={form.control}
                   name="status"
@@ -338,7 +338,7 @@ export default function NewProjectPage() {
                     </FormItem>
                   )}
                 />
-              )}
+              )} */}
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline" asChild>

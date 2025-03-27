@@ -50,7 +50,9 @@ export function SubcontractDetailsCard(
             </div>
             <div>
               <div className="font-medium">Cost Code</div>
-              <div>{subcontract?.costCode?.code}</div>
+              <div>
+                {subcontract?.costCodeData?.map((c) => c.code).join(", ") ?? ""}
+              </div>
             </div>
             <div>
               <div className="font-medium">Created Date</div>

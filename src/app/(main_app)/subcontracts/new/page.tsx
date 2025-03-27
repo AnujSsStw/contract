@@ -5,6 +5,10 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { SubcontractWizard } from "@/components/subcontract-wizard";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@cvx/_generated/api";
+import { Id } from "@cvx/_generated/dataModel";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 
 export const metadata: Metadata = {
   title: "Generate New Subcontract | Construction Contract Generator",
@@ -25,6 +29,14 @@ export default async function NewSubcontractPage({
     redirect("/");
   }
 
+  const dataFromDb = await fetchQuery(
+    api.subcontract.get,
+    {
+      subId: subId as Id<"subcontracts">,
+    },
+    { token: await convexAuthNextjsToken() },
+  );
+
   return (
     <div className="container py-8">
       <div className="flex items-center mb-8">
@@ -44,6 +56,7 @@ export default async function NewSubcontractPage({
         subId={subId}
         projectId={projectId}
         fromEdit={fromEdit}
+        dataFromDb={dataFromDb}
       />
     </div>
   );

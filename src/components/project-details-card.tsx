@@ -31,10 +31,10 @@ export function ProjectDetailsCard({
               <div className="font-medium">Project Number</div>
               <div>{project.name}</div>
             </div>
-            <div>
+            {/* <div>
               <div className="font-medium">Status</div>
               <div className="capitalize">{project.status}</div>
-            </div>
+            </div> */}
             <div>
               <div className="font-medium">Created at</div>
               <div className="capitalize">

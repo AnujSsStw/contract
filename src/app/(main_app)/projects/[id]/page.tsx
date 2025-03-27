@@ -13,7 +13,7 @@ import { NewSubcontractButton } from "@/components/new-subcontract-button";
 import { deleteProject } from "@/components/project-card";
 import { ProjectDetailsCard } from "@/components/project-details-card";
 import { SubcontractCard } from "@/components/subcontract-card";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -87,11 +87,11 @@ export default async function ProjectPage({
     );
   }
 
-  const statusColors = {
-    active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-    planning: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-    completed: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
-  };
+  // const statusColors = {
+  //   active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+  //   planning: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+  //   completed: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
+  // };
 
   return (
     <div className="container py-8">
@@ -108,14 +108,14 @@ export default async function ProjectPage({
               <h1 className="text-3xl font-bold tracking-tight">
                 {project.name}
               </h1>
-              <Badge
+              {/* <Badge
                 className={
                   statusColors[project.status as keyof typeof statusColors]
                 }
               >
                 {(project.status?.charAt(0).toUpperCase() || "Unknown") +
                   (project.status?.slice(1) || "")}
-              </Badge>
+              </Badge> */}
             </div>
             <p className="text-muted-foreground">
               {project.number} • {project.clientName}

@@ -80,6 +80,8 @@ export function SubcontractorInfoStep({
       toast.error("Error processing PDF");
     } finally {
       setIsProcessing(false);
+      setFile(null);
+      setIsExtracted(false);
     }
   };
 

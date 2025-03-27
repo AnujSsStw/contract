@@ -164,7 +164,7 @@ export default async function Latest({ searchParams }: PageProps) {
             </h1>
             <a
               className="text-blue-500 underline text-center block pt-4 pb-4 font-bold text-2xl"
-              href="https://www.paryaniconstruction.com/billing-documents"
+              href="https://paryani-my.sharepoint.com/:f:/g/personal/bhavik_paryaniconstruction_com/EuVKOkPF4rFLkiINEei4KKEBV9W9lTyXMj8Mc33x5ShZ3Q?e=zaQkNa"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -238,7 +238,7 @@ export default async function Latest({ searchParams }: PageProps) {
         </div>
       )}
 
-      {pageNumber === 7 && (
+      {/* {pageNumber === 7 && (
         <div className="flex flex-col gap-4 text-justify">
           <h1 className="text-xl font-bold text-center">PERFORMANCE BOND</h1>
           <p className="text-right">Bond No._________</p>
@@ -599,7 +599,7 @@ export default async function Latest({ searchParams }: PageProps) {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

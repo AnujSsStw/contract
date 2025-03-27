@@ -4,14 +4,14 @@ import * as React from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@cvx/_generated/api";
-import { Id } from "@cvx/_generated/dataModel";
+import { DataModel, Id } from "@cvx/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { FormData } from "../subcontract-wizard";
 import { useEffect } from "react";
-
+import { Badge } from "../ui/badge";
 interface CostCodeStepProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
@@ -20,15 +20,15 @@ interface CostCodeStepProps {
 export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const costCodes = useQuery(api.subcontract.getCostCodes);
-  const [selectedCostCode, setSelectedCostCode] = React.useState(
-    formData.costCode?._id,
-  );
+  const [selectedCostCodes, setSelectedCostCodes] = React.useState<
+    DataModel["costCodes"]["document"]["_id"][]
+  >(formData.costCodes || []);
 
   useEffect(() => {
-    if (formData.costCode) {
-      setSelectedCostCode(formData.costCode._id);
+    if (formData.costCodes) {
+      setSelectedCostCodes(formData.costCodes);
     }
-  }, [formData.costCode]);
+  }, [formData.costCodes]);
 
   const filteredCostCodes =
     costCodes?.filter(
@@ -37,10 +37,22 @@ export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
         code.description.toLowerCase().includes(searchTerm.toLowerCase()),
     ) || [];
 
-  const handleCostCodeSelect = (costCode: string) => {
-    setSelectedCostCode(costCode as Id<"costCodes">);
-    updateFormData({
-      costCode: costCodes?.find((code) => code._id === costCode),
+  const handleCostCodeToggle = (
+    costCodeId: Id<"costCodes">,
+    checked: boolean,
+  ) => {
+    setSelectedCostCodes((prev) => {
+      const newSelection = checked
+        ? [...prev, costCodeId]
+        : prev.filter((id) => id !== costCodeId);
+      updateFormData({
+        costCodes: newSelection,
+        costCodeData: costCodes?.filter((code) =>
+          newSelection.includes(code._id),
+        ),
+      });
+
+      return newSelection;
     });
   };
 
@@ -61,16 +73,25 @@ export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
       </div>
 
       <div className="space-y-2">
-        <Label>Select a Cost Code</Label>
+        <Label>
+          Select Cost Codes{" "}
+          {formData.costCodeData?.map((code) => (
+            <Badge className="mr-2" key={code.code}>
+              {code.code}
+            </Badge>
+          ))}
+        </Label>
         <ScrollArea className="h-[400px] rounded-md border">
-          <RadioGroup
-            value={selectedCostCode}
-            onValueChange={handleCostCodeSelect}
-            className="p-4"
-          >
+          <div className="p-4">
             {filteredCostCodes.map((code) => (
               <div key={code._id} className="flex items-center space-x-2 py-2">
-                <RadioGroupItem value={code._id} id={code._id} />
+                <Checkbox
+                  id={code._id}
+                  checked={selectedCostCodes.includes(code._id)}
+                  onCheckedChange={(checked) =>
+                    handleCostCodeToggle(code._id, checked as boolean)
+                  }
+                />
                 <Label htmlFor={code._id} className="flex-1 cursor-pointer">
                   <span className="font-medium">{code.code}</span> -{" "}
                   {code.description}
@@ -82,7 +103,7 @@ export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
                 No cost codes found. Try a different search term.
               </div>
             )}
-          </RadioGroup>
+          </div>
         </ScrollArea>
       </div>
     </div>

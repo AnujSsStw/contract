@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { whiteListEmail } from "@/lib/utils";
 
 const FLOW = "signUp";
 export default function SignUp() {
@@ -58,6 +59,11 @@ export default function SignUp() {
     formData.set("password", password);
     if (image) {
       formData.set("image", await convertImageToBase64(image));
+    }
+    if (!whiteListEmail(email)) {
+      toast.error("You are not authorized to sign up");
+      setLoading(false);
+      return;
     }
 
     void signIn("password", formData)

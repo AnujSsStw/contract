@@ -17,6 +17,7 @@ import { useState } from "react";
 import { FileCodeIcon as FileContract, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { whiteListEmail } from "@/lib/utils";
 
 const FLOW = "signIn";
 export default function SignIn() {
@@ -29,6 +30,10 @@ export default function SignIn() {
   const handleSignIn = () => {
     if (!email || !password) {
       toast.error("Please enter your email and password");
+      return;
+    }
+    if (!whiteListEmail(email)) {
+      toast.error("You are not authorized to sign in");
       return;
     }
     setLoading(true);

@@ -43,20 +43,10 @@ export const get = query({
       return null;
     }
     const project = (await ctx.db.get(subcontract.projectId)) || null;
-    // TODO: fix in all steps
-    if (!subcontract.costCode) {
-      return {
-        ...subcontract,
-        project: project,
-        costCode: null,
-      };
-    }
-
-    const costCode = await ctx.db.get(subcontract.costCode);
     return {
       ...subcontract,
       project: project,
-      costCode: costCode,
+      costCode: subcontract.costCodeData,
     };
   },
 });
@@ -119,7 +109,7 @@ export const bulkUpdateOrCreate = mutation({
         case "cost-code":
           // check if the code is being changed
           await ctx.db.patch(subId, {
-            costCode: data.costCode,
+            costCodes: data.costCodes,
             currentStep: step,
             scopeOfWork: data.scopeOfWork,
             costCodeData: data.costCodeData,
@@ -206,7 +196,7 @@ export const getCostCodeById = query({
 
 export const getSuggestedScopes = query({
   args: {
-    costCode: v.optional(v.id("costCodes")),
+    costCode: v.optional(v.array(v.id("costCodes"))),
     subId: v.id("subcontracts"),
   },
   handler: async (ctx, args) => {
@@ -214,18 +204,29 @@ export const getSuggestedScopes = query({
     if (!costCode) {
       return null;
     }
-    const costCodeDoc = await ctx.db.get(costCode);
-    if (!costCodeDoc) {
+    const costCodeDocs = await Promise.all(
+      costCode.map(async (code) => {
+        return await ctx.db.get(code);
+      }),
+    );
+    if (!costCodeDocs) {
       return null;
     }
-    const suggestedScopes = await ctx.db
-      .query("scopeOfWorks")
-      .withIndex("byCostCode", (q) => q.eq("cost_code", costCodeDoc.code))
-      .collect();
+    const suggestedScopes = await Promise.all(
+      costCodeDocs.map(async (code) => {
+        if (!code) {
+          return [];
+        }
+        return await ctx.db
+          .query("scopeOfWorks")
+          .withIndex("byCostCode", (q) => q.eq("cost_code", code.code))
+          .collect();
+      }),
+    );
     const aiSuggestedScopes = await ctx.db.get(subId);
     return {
-      costCode: costCodeDoc,
-      suggestedScopes,
+      costCode: costCodeDocs,
+      suggestedScopes: suggestedScopes.flat(),
       aiSuggestedScopes: aiSuggestedScopes?.aiScopeOfWork,
     };
   },
@@ -241,34 +242,47 @@ export const addScopeOfWork = mutation({
           v.literal("ai"),
         ),
         text: v.string(),
+        cost_code: v.string(),
       }),
     ),
-    costCode: v.id("costCodes"),
   },
   handler: async (ctx, args) => {
-    const { scopeOfWork, costCode } = args;
-    const costCodeDoc = await ctx.db.get(costCode);
-    if (!costCodeDoc) {
-      throw new Error("Cost code not found");
-    }
+    const { scopeOfWork } = args;
     // prevent duplicates
-    const existingScopes = await ctx.db
-      .query("scopeOfWorks")
-      .withIndex("byCostCode", (q) => q.eq("cost_code", costCodeDoc.code))
-      .collect();
+    const existingScopes = await Promise.all(
+      scopeOfWork.map(async (s) => {
+        const existingScopes = await ctx.db
+          .query("scopeOfWorks")
+          .withIndex("byCostCode", (q) => q.eq("cost_code", s.cost_code))
+          .collect();
+        return existingScopes;
+      }),
+    );
+    const costCodeDoc = await Promise.all(
+      scopeOfWork.map(async (s) => {
+        return ctx.db
+          .query("costCodes")
+          .withIndex("byCode", (q) => q.eq("code", s.cost_code))
+          .first();
+      }),
+    );
 
     const p = scopeOfWork
       .filter((s) => s.type !== "suggested")
       .filter(
         (item) =>
-          !existingScopes.some(
-            (s) => s.scope_of_work === item.text && s.type === item.type,
-          ),
+          !existingScopes
+            .flat()
+            .some((s) => s.scope_of_work === item.text && s.type === item.type),
       )
-      .map((s) => {
+      .map((s, index) => {
+        const doc = costCodeDoc[index];
+        if (!doc) {
+          throw new Error(`Cost code document not found for index ${index}`);
+        }
         return ctx.db.insert("scopeOfWorks", {
-          cost_code: costCodeDoc.code,
-          category: costCodeDoc.description,
+          cost_code: doc.code,
+          category: doc.description,
           scope_of_work: s.text,
           type: s.type,
         });

@@ -57,8 +57,8 @@ export const subcontractsSchema = {
   aiResponse: v.optional(v.any()),
   aiScopeOfWork: v.optional(v.any()),
 
-  //cost code
-  costCode: v.optional(v.id("costCodes")),
+  //cost codes
+  costCodes: v.optional(v.array(v.id("costCodes"))),
   costCodeData: v.optional(v.array(v.object(costCodesSchema))),
 
   //contract value
@@ -71,6 +71,7 @@ export const subcontractsSchema = {
       v.object({
         type: v.string(),
         text: v.string(),
+        cost_code: v.string(),
       }),
     ),
   ),
@@ -121,7 +122,7 @@ export default defineSchema({
     value: v.number(),
   }),
   projects: defineTable(projectsSchemaWithCreatedBy),
-  costCodes: defineTable(costCodesSchema),
+  costCodes: defineTable(costCodesSchema).index("byCode", ["code"]),
   scopeOfWorks: defineTable(scopeOfWorksSchema)
     .index("byCostCode", ["cost_code"])
     .index("byScopeOfWork", ["scope_of_work"]),

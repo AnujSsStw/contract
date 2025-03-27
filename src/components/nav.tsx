@@ -21,7 +21,12 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-10 text-primary-foreground p-4 border-b-2 flex flex-row justify-between items-center bg-primary ">
       <Link href="/" className="text-4xl font-bold text-center">
-        <Image src="/logo.webp" alt="logo" width={150} height={150} />
+        <Image
+          src="/Inverse_Logo-removebg-preview.png"
+          alt="logo"
+          width={150}
+          height={150}
+        />
       </Link>
       <SignOutButton />
     </header>

@@ -52,23 +52,8 @@ async function captureLatestPdfForDevice(updateState: Subcontract) {
       url: `${serverUrl}/latest?state=${base64State}&page=5`,
       page: 5,
     },
-    {
-      url: `${serverUrl}/latest?state=${base64State}&page=7`,
-      page: 7,
-    },
-    {
-      url: `${serverUrl}/latest?state=${base64State}&page=8`,
-      page: 8,
-    },
-    {
-      url: `${serverUrl}/latest?state=${base64State}&page=9`,
-      page: 9,
-    },
   ];
   console.log("finalUrls", finalUrls);
-
-  // Add emulation of print media
-  // await page.emulateMediaType("print");
 
   const pdfs = await Promise.all(
     finalUrls.map(async (url) => {
@@ -171,12 +156,8 @@ export async function POST(req: Request) {
       page: 4,
     },
     {
-      url: "https://4u651ly4qn.ufs.sh/f/MU2Krr5SfEZtlkeAm4l1ryQSKePf4a9GuRjtACY1bsziVNO3",
+      url: "https://4u651ly4qn.ufs.sh/f/MU2Krr5SfEZtiMihI4bCA5IVl78jptQBGOhuTJDERswFczXv",
       page: 6,
-    },
-    {
-      url: "https://4u651ly4qn.ufs.sh/f/MU2Krr5SfEZt5BSnmc4t2uKknqM0lwPgOBV3YpRQcvGDiSzE",
-      page: 10,
     },
   ];
 
@@ -288,6 +269,8 @@ export async function POST(req: Request) {
 // page 3 - from puppeteer - 1
 // page 4 = from pdf-lib - https://4u651ly4qn.ufs.sh/f/MU2Krr5SfEZtz2INElf3uENDHWOCkmc9AjTYPgQdRrZBvMLq
 // page 5 = from puppeteer - 1, 2(can be expanded depending on the data)
+// https://4u651ly4qn.ufs.sh/f/MU2Krr5SfEZtiMihI4bCA5IVl78jptQBGOhuTJDERswFczXv
+
 // page 6 = from pdf-lib - https://4u651ly4qn.ufs.sh/f/MU2Krr5SfEZtlkeAm4l1ryQSKePf4a9GuRjtACY1bsziVNO3
 // page 7 = from puppeteer - 1, 2
 // page 8 = from puppeteer - 1, 2,
