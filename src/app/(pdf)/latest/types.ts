@@ -1,3 +1,5 @@
+import { DataModel } from "@cvx/_generated/dataModel";
+
 export type Subcontract = {
   date: string;
   subcontractor_name: string;
@@ -21,10 +23,14 @@ export type Subcontract = {
   project_generated_user_email: string;
 
   cost_code: string[];
-  scope_of_work: string[];
+  scope_of_work: DataModel["subcontracts"]["document"]["scopeOfWork"];
 
-  exclusion: string[]; //not implemented
-  cost_breakdown: string[]; //not implemented
+  divisions: DataModel["costCodes"]["document"][];
+
+  exclusion: string[];
+  cost_breakdown: string[];
+
+  subvContactName: string;
 };
 
 export const dummy_data: Subcontract = {
@@ -44,7 +50,15 @@ export const dummy_data: Subcontract = {
   project_generated_user: "Project Generated User",
   project_generated_user_email: "Project Generated User Email",
   cost_code: ["123456"],
-  scope_of_work: ["Scope of Work 1", "Scope of Work 2"],
+  scope_of_work: [
+    {
+      type: "Scope of Work 1",
+      cost_code: "123456",
+      text: "Scope of Work 1",
+    },
+  ],
   exclusion: [],
   cost_breakdown: [],
+  divisions: [],
+  subvContactName: "Subv Contact Name",
 };

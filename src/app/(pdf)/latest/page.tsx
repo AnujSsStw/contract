@@ -47,10 +47,12 @@ export default async function Latest({ searchParams }: PageProps) {
                 {parsedState.subcontractor_name} (hereinafter
                 &quot;Subcontractor&quot;)
               </p>
-              <p>{parsedState.subcontractor_address_line_1}</p>
-              {parsedState.subcontractor_address_line_2 && (
-                <p>{parsedState.subcontractor_address_line_2}</p>
-              )}
+              <div className="flex flex-col gap-2">
+                <p>{parsedState.subcontractor_address_line_1}</p>
+                {parsedState.subcontractor_address_line_2 && (
+                  <p>{parsedState.subcontractor_address_line_2}</p>
+                )}
+              </div>
               <p>{parsedState.subcontractor_phone}</p>
             </div>
             <p>to perform the work identified herein.</p>
@@ -183,7 +185,11 @@ export default async function Latest({ searchParams }: PageProps) {
               <p>accounting@paryaniconstruciton.com</p>
             </div>
           </article>
-          <article>
+          <article
+            style={{
+              pageBreakBefore: "always",
+            }}
+          >
             <h1 className="text-2xl font-bold text-center">
               Job Specific Information
             </h1>
@@ -195,10 +201,10 @@ export default async function Latest({ searchParams }: PageProps) {
           <p>
             A. The stated scope of work under this contract agreement is to
             provide the Work per Plans and Specification Division{" "}
-            {parsedState.scope_of_work.map((item) => item).join(", ")}. Your
-            firm is required to comply with construction safety standards at all
-            times. This is a schedule driven project and any delay caused by
-            your firm needs to be addressed immediately through a recovery
+            {parsedState.divisions.map((item) => item.description).join(", ")}.
+            Your firm is required to comply with construction safety standards
+            at all times. This is a schedule driven project and any delay caused
+            by your firm needs to be addressed immediately through a recovery
             schedule administered by your firm and approved/coordinated by
             Paryani Construction.
           </p>
@@ -206,27 +212,27 @@ export default async function Latest({ searchParams }: PageProps) {
             <h3 className="underline font-bold">
               SEE SAMPLE SCOPE OF WORK IN OPERTAIONS FOLDER FOR MORE DETAIL.
             </h3>
-            <div className="ml-7 list-decimal">
-              {parsedState.scope_of_work.map((item) => (
-                <p key={item}>{item}</p>
+            <ol className="list-decimal ml-7">
+              {parsedState.scope_of_work?.map((item) => (
+                <li key={item.type}>{item.text}</li>
               ))}
-            </div>
+            </ol>
           </div>
           <p>B. Summary of Exclusions:</p>
-          <div className="ml-7 list-decimal">
+          <ol className="ml-7 list-decimal">
             {parsedState.exclusion.map((item) => (
-              <p key={item}>{item}</p>
+              <li key={item}>{item}</li>
             ))}
-          </div>
+          </ol>
           <p>C. Breakdown of Costs:</p>
-          <div className="ml-7 list-decimal">
+          <ol className="ml-7 list-decimal">
             {parsedState.cost_breakdown.map((item) => (
-              <p key={item}>{item}</p>
+              <li key={item}>{item}</li>
             ))}
-          </div>
+          </ol>
           <p>D. Notices to Subcontractor shall be sent to the following:</p>
-          <div className="ml-7">
-            <p>Project Contact: {parsedState.project_generated_user}</p>
+          <div className="ml-7 font-bold">
+            <p>Project Contact: {parsedState.subvContactName}</p>
             <p>Subcontractor Name: {parsedState.subcontractor_name}</p>
             <p>
               Subcontractor Address: {parsedState.subcontractor_address_line_1}

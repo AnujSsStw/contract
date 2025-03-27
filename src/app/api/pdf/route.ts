@@ -58,9 +58,7 @@ async function captureLatestPdfForDevice(updateState: Subcontract) {
   const pdfs = await Promise.all(
     finalUrls.map(async (url) => {
       const page = await browser.newPage();
-      await page.goto(url.url, {
-        waitUntil: "networkidle0",
-      });
+      await page.goto(url.url);
 
       const pdf = await page.pdf({
         format: "LETTER",
@@ -98,6 +96,7 @@ function getAttachmentUrl(url: string) {
 }
 
 export async function POST(req: Request) {
+  console.time("start");
   const { subcontractId } = await req.json();
   const subcontract = await fetchQuery(api.download.getSubcontractDetails, {
     subcontractId,
@@ -127,10 +126,20 @@ export async function POST(req: Request) {
     bond_needed: subcontract.project.bondsRequired === true ? "Yes" : "No",
     date,
     subcontractor_name: subcontract.subcontract.contactName || "",
-    subcontractor_address_line_1: subcontract.subcontract.companyAddress || "",
-    subcontractor_address_line_2: "",
+    subcontractor_address_line_1: subcontract.subcontract.companyAddress
+      ? subcontract.subcontract.companyAddress.length > 50
+        ? subcontract.subcontract.companyAddress.substring(0, 50)
+        : subcontract.subcontract.companyAddress
+      : "",
+    subcontractor_address_line_2:
+      subcontract.subcontract.companyAddress &&
+      subcontract.subcontract.companyAddress.length > 50
+        ? subcontract.subcontract.companyAddress.substring(50)
+        : "",
     subcontractor_phone: subcontract.subcontract.contactPhone || "",
-    contract_value: subcontract.subcontract.contractValueText || "",
+    contract_value:
+      `${subcontract.subcontract.contractValueText}. ($${subcontract.subcontract.contractValue})` ||
+      "",
     cost_breakdown: subcontract.subcontract.costBreakdown || [],
     cost_code: subcontract.subcontract.costCodeData?.map((c) => c.code) || [],
     exclusion: subcontract.subcontract.exclusions || [],
@@ -138,11 +147,12 @@ export async function POST(req: Request) {
     project_address: subcontract.project.address,
     project_generated_user: subcontract.user.name || "",
     project_generated_user_email: subcontract.user.email || "",
-    project_number: `${subcontract.project.number}-${subcontract.subcontract.costCodeData?.map((c) => c.code).join("-")}`,
-    scope_of_work:
-      subcontract.subcontract.scopeOfWork?.map((s) => s.text) || [],
-    subcontract_number: subcontract.subcontract._id.toString() || "",
+    project_number: subcontract.project.number,
+    scope_of_work: subcontract.subcontract.scopeOfWork || [],
+    subcontract_number: `${subcontract.project.number}-${subcontract.subcontract.costCodeData?.map((c) => c.code).join("/")}`,
     project_owner_client_legal_name: subcontract.project.clientLegalEntity,
+    divisions: subcontract.costCodes || [],
+    subvContactName: subcontract.subcontract.contactEmail || "",
   };
 
   const pdf = await captureLatestPdfForDevice(data);
@@ -260,6 +270,8 @@ export async function POST(req: Request) {
       url: url.href,
     });
   }
+
+  console.timeEnd("start");
 
   return new Response(mergedPdf);
 }

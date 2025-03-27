@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 export const getSubcontractDetails = query({
   args: {
@@ -11,7 +12,18 @@ export const getSubcontractDetails = query({
       throw new Error("Subcontract not found");
     }
 
-    const project = await ctx.db.get(subcontract.projectId);
+    // Fetch project and user in parallel
+    const [project, costCodes] = await Promise.all([
+      ctx.db.get(subcontract.projectId),
+      subcontract.costCodes
+        ? Promise.all(
+            subcontract.costCodes.map(async (costCode) => {
+              return await ctx.db.get(costCode);
+            }),
+          )
+        : [],
+    ]);
+
     if (!project) {
       throw new Error("Project not found");
     }
@@ -23,6 +35,12 @@ export const getSubcontractDetails = query({
 
     return {
       subcontract,
+      costCodes: costCodes.filter((c) => c !== null) as {
+        _id: Id<"costCodes">;
+        _creationTime: number;
+        description: string;
+        code: string;
+      }[],
       project,
       user,
     };
