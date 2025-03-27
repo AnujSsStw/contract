@@ -201,6 +201,7 @@ export default async function ProjectPage({
                     subcontractor={subcontract.contactName || ""}
                     value={subcontract.contractValue || 0}
                     status={subcontract.isDraft ? "draft" : "exported"}
+                    projectId={subcontract.projectId ?? project._id}
                   />
                 ))}
               </div>

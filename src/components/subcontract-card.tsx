@@ -21,6 +21,7 @@ interface SubcontractCardProps {
   status: "draft" | "exported";
   className?: string;
   id: string;
+  projectId: string;
 }
 
 export function SubcontractCard({
@@ -31,6 +32,7 @@ export function SubcontractCard({
   status,
   className,
   id,
+  projectId,
 }: SubcontractCardProps) {
   return (
     <Card className={cn("flex flex-col", className)}>
@@ -80,7 +82,11 @@ export function SubcontractCard({
         {/* TODO: fix this */}
         {status === "draft" && (
           <Button asChild size="sm">
-            <Link href={`/subcontracts/${id}/edit`}>Continue Editing</Link>
+            <Link
+              href={`/subcontracts/new?subId=${id}&step=0&projectId=${projectId}&fromEdit=true`}
+            >
+              Continue Editing
+            </Link>
           </Button>
         )}
       </CardFooter>
