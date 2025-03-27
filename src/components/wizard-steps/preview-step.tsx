@@ -119,7 +119,11 @@ export function PreviewStep({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="font-medium">Cost Code:</p>
-                      <p>{formData.costCode?.code || "Not specified"}</p>
+                      <p>
+                        {formData.costCodeData
+                          ?.map((costCode) => costCode.code)
+                          .join(", ") || "Not specified"}
+                      </p>
                     </div>
                     <div>
                       <p className="font-medium">Contract Value:</p>
