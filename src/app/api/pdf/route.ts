@@ -21,7 +21,6 @@ async function captureLatestPdfForDevice(updateState: Subcontract) {
           "--disable-web-security",
         ]
       : chromium.args,
-    // See https://www.npmjs.com/package/@sparticuz/chromium#running-locally--headlessheadful-mode for local executable path
     executablePath: isDev
       ? localChromePath
       : await chromium.executablePath(chromiumPack),
@@ -29,8 +28,6 @@ async function captureLatestPdfForDevice(updateState: Subcontract) {
   });
 
   console.log("browser launched");
-
-  // TODO: setup page dimensions based on device model
 
   const jsonStr = JSON.stringify(updateState);
   const base64State = Buffer.from(jsonStr).toString("base64");
@@ -95,6 +92,44 @@ function getAttachmentUrl(url: string) {
   return getImageUrl.href;
 }
 
+// Define an interface for the attachment
+interface Attachment {
+  url: string;
+  [key: string]: string | number | boolean | null | undefined;
+}
+
+async function fetchAndLoadAttachments(attachments: Attachment[]) {
+  if (!attachments?.length) return [];
+
+  return Promise.all(
+    attachments.map(async (attachment, index) => {
+      const uploadedPdf = await fetch(getAttachmentUrl(attachment.url)).then(
+        (res) => res.arrayBuffer(),
+      );
+      const pdfDoc = await PDFDocument.load(uploadedPdf);
+      return {
+        index,
+        pdfDoc,
+      };
+    }),
+  );
+}
+
+async function fetchAndLoadUploadedPdfs(
+  uploadedPdfUrls: { url: string; page: number }[],
+) {
+  return Promise.all(
+    uploadedPdfUrls.map(async (url) => {
+      const uploadedPdf = await fetch(url.url).then((res) => res.arrayBuffer());
+      const pdfDoc = await PDFDocument.load(uploadedPdf);
+      return {
+        page: url.page,
+        pdf: pdfDoc,
+      };
+    }),
+  );
+}
+
 export async function POST(req: Request) {
   console.time("start");
   const { subcontractId } = await req.json();
@@ -155,7 +190,6 @@ export async function POST(req: Request) {
     subvContactName: subcontract.subcontract.contactEmail || "",
   };
 
-  const pdf = await captureLatestPdfForDevice(data);
   const uploadedPdfUrls = [
     {
       url: "https://4u651ly4qn.ufs.sh/f/MU2Krr5SfEZtvzjUqmCRWPagytV5M3p6rbcwz4GYL0OfZUJj",
@@ -171,28 +205,24 @@ export async function POST(req: Request) {
     },
   ];
 
-  const uploadedPdf = await Promise.all(
-    uploadedPdfUrls.map(async (url) => {
-      const uploadedPdf = await fetch(url.url).then((res) => res.arrayBuffer());
-      const pdfDoc = await PDFDocument.load(uploadedPdf);
-      return {
-        page: url.page,
-        pdf: pdfDoc,
-      };
-    }),
-  );
+  // Start all heavy operations in parallel
+  const [puppeteerPdfs, uploadedPdfs, attachmentPages] = await Promise.all([
+    captureLatestPdfForDevice(data),
+    fetchAndLoadUploadedPdfs(uploadedPdfUrls),
+    fetchAndLoadAttachments(subcontract.subcontract.attachments || []),
+  ]);
 
   // Create a new PDF document to merge all pages
   const mergedDoc = await PDFDocument.create();
 
-  // Create an array of all PDFs with their page numbers
+  // Create an array of all PDFs with their page numbers (except attachments)
   const allPdfs = [
-    ...pdf.map((p) => ({
+    ...puppeteerPdfs.map((p) => ({
       page: p.page,
       pdf: Buffer.from(p.pdf),
       type: "puppeteer" as const,
     })),
-    ...uploadedPdf.map((p) => ({
+    ...uploadedPdfs.map((p) => ({
       page: p.page,
       pdf: p.pdf,
       type: "uploaded" as const,
@@ -221,33 +251,14 @@ export async function POST(req: Request) {
     }
   }
 
-  // add attachments to the pdf
-  const attachments = subcontract.subcontract.attachments;
-  if (attachments) {
-    const attachmentPages = await Promise.all(
-      attachments.map(async (attachment, index) => {
-        const uploadedPdf = await fetch(getAttachmentUrl(attachment.url)).then(
-          (res) => res.arrayBuffer(),
-        );
-        const pdfDoc = await PDFDocument.load(uploadedPdf);
-        const pageCount = pdfDoc.getPageCount();
-        const pages = await mergedDoc.copyPages(
-          pdfDoc,
-          Array.from(Array(pageCount).keys()),
-        );
-        return {
-          index,
-          pages,
-        };
-      }),
+  // Add attachments to the PDF (already loaded in parallel)
+  for (const { pdfDoc } of attachmentPages.sort((a, b) => a.index - b.index)) {
+    const pageCount = pdfDoc.getPageCount();
+    const pages = await mergedDoc.copyPages(
+      pdfDoc,
+      Array.from(Array(pageCount).keys()),
     );
-
-    // Maintain original order by sorting by index before adding pages
-    attachmentPages
-      .sort((a, b) => a.index - b.index)
-      .forEach(({ pages }) => {
-        pages.forEach((page) => mergedDoc.addPage(page));
-      });
+    pages.forEach((page) => mergedDoc.addPage(page));
   }
 
   // Save the final merged PDF
