@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { subcontractsSchema, stepSchema } from "./schema";
 import { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
+import { stepSchema, subcontractsSchema } from "./schema";
 
 export const create = mutation({
   args: {},
@@ -21,7 +21,7 @@ export const getAll = query({
   args: {},
   handler: async (ctx) => {
     const subcontracts = await ctx.db.query("subcontracts").collect();
-    return subcontracts;
+    return subcontracts.filter((sub) => sub.projectId);
   },
 });
 
