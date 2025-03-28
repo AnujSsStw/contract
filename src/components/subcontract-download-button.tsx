@@ -30,8 +30,11 @@ export function SubcontractDownloadButton({
     // Create a URL for immediate download
     const downloadUrl = URL.createObjectURL(blob);
 
-    // Open the PDF in a new tab for the user
-    window.open(downloadUrl, "_blank");
+    // create a an anchor tag and click it to download the file
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = "subcontract.pdf";
+    a.click();
 
     toast.warning("Uploading to storage is disabled for now");
     // In parallel, upload the PDF to storage for future use

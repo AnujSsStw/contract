@@ -17,7 +17,7 @@ import { useState } from "react";
 import { FileCodeIcon as FileContract, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { whiteListEmail } from "@/lib/utils";
+// import { whiteListEmail } from "@/lib/utils";
 
 const FLOW = "signIn";
 export default function SignIn() {
@@ -32,10 +32,10 @@ export default function SignIn() {
       toast.error("Please enter your email and password");
       return;
     }
-    if (!whiteListEmail(email)) {
-      toast.error("You are not authorized to sign in");
-      return;
-    }
+    // if (!whiteListEmail(email)) {
+    //   toast.error("You are not authorized to sign in");
+    //   return;
+    // }
     setLoading(true);
     const formData = new FormData();
     formData.set("flow", FLOW);
@@ -47,7 +47,9 @@ export default function SignIn() {
         router.push("/");
       })
       .catch((error) => {
-        toast.error(error.message);
+        console.log(error);
+
+        // toast.error(error);
       })
       .finally(() => {
         setLoading(false);

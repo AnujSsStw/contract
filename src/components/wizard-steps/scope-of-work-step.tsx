@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface ScopeOfWorkStepProps {
   formData: FormData;
@@ -152,6 +153,7 @@ export function ScopeOfWorkStep({
       scopes: allScopes,
       aiScopeOfWork: uploadedAiScopes,
     });
+    toast.success("Scopes updated");
   }, [
     manualScopes,
     selectedManualCostCodes,

@@ -47,6 +47,7 @@ function SignOutButton() {
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
                 {user.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={user.image}
                     alt="User"

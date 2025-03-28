@@ -8,10 +8,7 @@ const isSignInPage = createRouteMatcher(["/signin"]);
 const isProtectedRoute = createRouteMatcher([
   "/",
   "/projects/(.*)",
-  "/projects/(.*)/edit",
-  "/projects/(.*)/subcontracts",
   "/subcontracts/(.*)",
-  "/subcontracts/(.*)/edit",
 ]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
