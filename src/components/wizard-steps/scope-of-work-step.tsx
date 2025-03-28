@@ -459,7 +459,19 @@ export function ScopeOfWorkStep({
       </Tabs>
 
       <div className="flex justify-end">
-        <Button onClick={updateScopes}>Confirm Selection</Button>
+        <Button
+          onClick={() => {
+            if (
+              window.confirm(
+                "Are you sure you want to confirm this selection? This will update the subcontract.",
+              )
+            ) {
+              updateScopes();
+            }
+          }}
+        >
+          Confirm Selection
+        </Button>
       </div>
     </div>
   );
