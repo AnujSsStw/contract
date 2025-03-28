@@ -41,18 +41,16 @@ export function CostCodeStep({ formData, updateFormData }: CostCodeStepProps) {
     costCodeId: Id<"costCodes">,
     checked: boolean,
   ) => {
-    setSelectedCostCodes((prev) => {
-      const newSelection = checked
-        ? [...prev, costCodeId]
-        : prev.filter((id) => id !== costCodeId);
-      updateFormData({
-        costCodes: newSelection,
-        costCodeData: costCodes?.filter((code) =>
-          newSelection.includes(code._id),
-        ),
-      });
+    const newSelection = checked
+      ? [...selectedCostCodes, costCodeId]
+      : selectedCostCodes.filter((id) => id !== costCodeId);
 
-      return newSelection;
+    setSelectedCostCodes(newSelection);
+    updateFormData({
+      costCodes: newSelection,
+      costCodeData: costCodes?.filter((code) =>
+        newSelection.includes(code._id),
+      ),
     });
   };
 

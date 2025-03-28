@@ -27,8 +27,7 @@ import { ProjectInfoStep } from "@/components/wizard-steps/project-info-step";
 import { ScopeOfWorkStep } from "@/components/wizard-steps/scope-of-work-step";
 import { SubcontractorInfoStep } from "@/components/wizard-steps/subcontractor-info-step";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Attachment } from "@/components/wizard-steps/attachments-step";
 import { api } from "@cvx/_generated/api";
@@ -46,14 +45,6 @@ const steps = [
   { id: "attachments", title: "Upload Attachments", icon: Upload },
   { id: "preview", title: "Preview & Generate", icon: Check },
 ];
-
-function parseStep(step: string | undefined) {
-  if (!step) return 0;
-  const parsedStep = parseInt(step);
-  if (isNaN(parsedStep)) return 0;
-  if (parsedStep > steps.length) return steps.length - 1;
-  return parsedStep;
-}
 
 export type FormData = {
   projectName: string | undefined;
@@ -89,30 +80,18 @@ export type FormData = {
 };
 
 export function SubcontractWizard({
-  step,
   subId,
   projectId,
   fromEdit = "false",
   dataFromDb,
 }: {
-  step: string | undefined;
   subId: string | undefined;
   projectId: string | undefined;
   fromEdit: string | undefined;
   dataFromDb: DataModel["subcontracts"]["document"] | undefined | null;
 }) {
-  const searchParams = useSearchParams();
-  const urlStep = searchParams.get("step");
-
-  React.useEffect(() => {
-    const newStep = parseStep(urlStep || step);
-    setCurrentStep(newStep);
-  }, [urlStep, step]);
-
   const router = useRouter();
-  const [currentStep, setCurrentStep] = React.useState(
-    parseStep(urlStep || step),
-  );
+  const [currentStep, setCurrentStep] = React.useState(0);
   const [formData, setFormData] = React.useState<FormData>({
     projectId: projectId,
     projectName: "",
@@ -340,14 +319,9 @@ export function SubcontractWizard({
                 !subId && index > 0 ? "opacity-50" : "",
               )}
             >
-              <Link
-                href={
-                  subId
-                    ? `/subcontracts/new?subId=${subId}&step=${index}`
-                    : index === 0
-                      ? `/subcontracts/new?step=${index}`
-                      : "#"
-                }
+              <button
+                type="button"
+                disabled={!subId && index > 0}
                 className={cn(
                   "flex flex-col items-center justify-center w-full p-2 rounded-md",
                   index === currentStep && "bg-accent",
@@ -355,11 +329,12 @@ export function SubcontractWizard({
                     ? "cursor-not-allowed"
                     : "hover:bg-accent",
                 )}
-                // onClick={(e) => {
-                //   if (!subId && index > 0) {
-                //     e.preventDefault();
-                //   }
-                // }}
+                onClick={() => {
+                  if (!subId && index > 0) {
+                    return;
+                  }
+                  setCurrentStep(index);
+                }}
               >
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
                   <step.icon className="w-4 h-4" />
@@ -370,7 +345,7 @@ export function SubcontractWizard({
                 <span className="mt-2 text-xs font-medium text-center md:hidden">
                   {index + 1}
                 </span>
-              </Link>
+              </button>
             </li>
           ))}
         </ol>

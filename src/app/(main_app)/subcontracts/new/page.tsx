@@ -20,7 +20,7 @@ export default async function NewSubcontractPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const step = (await searchParams).step as string | undefined;
+  // const step = (await searchParams).step as string | undefined;
   const subId = (await searchParams).subId as string | undefined;
   const projectId = (await searchParams).projectId as string | undefined;
   const fromEdit = (await searchParams).fromEdit as string | undefined;
@@ -52,7 +52,7 @@ export default async function NewSubcontractPage({
       </div>
 
       <SubcontractWizard
-        step={step}
+        // step={step}
         subId={subId}
         projectId={projectId}
         fromEdit={fromEdit}
