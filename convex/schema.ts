@@ -104,6 +104,7 @@ export const subcontractsSchema = {
 
   //docusign sent
   docusignSent: v.optional(v.boolean()),
+  createdBy: v.optional(v.id("users")),
 };
 
 const scopeOfWorksSchema = {

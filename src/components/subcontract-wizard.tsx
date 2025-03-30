@@ -107,7 +107,7 @@ export function SubcontractWizard({
     attachments: [],
     aiResponse: undefined,
     aiScopeOfWork: undefined,
-    isDraft: true,
+    isDraft: false,
     docusignSent: false,
     exclusions: [],
     costBreakdown: [],
@@ -191,7 +191,7 @@ export function SubcontractWizard({
         },
       });
     } else if (currentStep === 2) {
-      if (!formData.costCodes) {
+      if (formData.costCodes?.length === 0) {
         toast.error("Cost code is required");
         return;
       }
@@ -243,7 +243,10 @@ export function SubcontractWizard({
         data: { scopeOfWork: formData.scopes },
       });
     } else if (currentStep === 5) {
-      if (!formData.exclusions || !formData.costBreakdown) {
+      if (
+        formData.exclusions?.length === 0 ||
+        formData.costBreakdown?.length === 0
+      ) {
         toast.warning(
           "Moving on to the next step without exclusions or cost breakdown",
         );
@@ -257,7 +260,7 @@ export function SubcontractWizard({
         },
       });
     } else if (currentStep === 6) {
-      if (!formData.attachments) {
+      if (formData.attachments?.length === 0) {
         toast.warning("Moving on to the next step without attachments");
       }
       await createSubcontract({
@@ -303,7 +306,6 @@ export function SubcontractWizard({
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
-  console.log(formData);
 
   return (
     <div className="space-y-8">
@@ -363,7 +365,7 @@ export function SubcontractWizard({
             {currentStep === 3 && "Enter the contract value"}
             {currentStep === 4 &&
               "Define the scope of work for this subcontract"}
-            {currentStep === 5 && "Enter extra information"}
+            {/* {currentStep === 5 && "Enter extra information"} */}
             {currentStep === 6 &&
               "Upload additional attachments for the subcontract"}
             {currentStep === 7 && "Review and generate the subcontract"}

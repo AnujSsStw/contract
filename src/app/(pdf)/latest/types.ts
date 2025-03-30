@@ -31,6 +31,7 @@ export type Subcontract = {
   cost_breakdown: string[];
 
   subvContactName: string;
+  subcontractor_company_name: string;
 };
 
 export const dummy_data: Subcontract = {
@@ -61,4 +62,5 @@ export const dummy_data: Subcontract = {
   cost_breakdown: [],
   divisions: [],
   subvContactName: "Subv Contact Name",
+  subcontractor_company_name: "Subcontractor Company Name",
 };

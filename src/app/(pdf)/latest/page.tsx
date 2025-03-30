@@ -44,7 +44,7 @@ export default async function Latest({ searchParams }: PageProps) {
             <p>and</p>
             <div>
               <p>
-                {parsedState.subcontractor_name} (hereinafter
+                {parsedState.subcontractor_company_name} (hereinafter
                 &quot;Subcontractor&quot;)
               </p>
               <div className="flex flex-col gap-2">
@@ -101,7 +101,7 @@ export default async function Latest({ searchParams }: PageProps) {
             <p>Seal:</p>
           </div>
           <div className="flex flex-col gap-4">
-            <p>{parsedState.subcontractor_name}</p>
+            <p>{parsedState.subcontractor_company_name}</p>
             <p>By: ___________________________</p>
             <p>Title: ___________________________</p>
             <p>Witness: ___________________________</p>
@@ -181,7 +181,7 @@ export default async function Latest({ searchParams }: PageProps) {
               <p>Accounting Dept.</p>
               <p>5505 Interstate North Parkway, Suite 100</p>
               <p>Atlanta GA 30328</p>
-              <p>(404) 432-7820</p>
+              <p>770-652-2316</p>
               <p>accounting@paryaniconstruciton.com</p>
             </div>
           </article>
@@ -209,9 +209,6 @@ export default async function Latest({ searchParams }: PageProps) {
             Paryani Construction.
           </p>
           <div className="flex flex-col gap-4">
-            <h3 className="underline font-bold">
-              SEE SAMPLE SCOPE OF WORK IN OPERTAIONS FOLDER FOR MORE DETAIL.
-            </h3>
             <ol className="list-decimal ml-7">
               {parsedState.scope_of_work?.map((item) => (
                 <li key={item.type}>{item.text}</li>
@@ -237,6 +234,7 @@ export default async function Latest({ searchParams }: PageProps) {
             <p>
               Subcontractor Address: {parsedState.subcontractor_address_line_1}
             </p>
+            <p>Subcontractor Phone: {parsedState.subcontractor_phone}</p>
             {parsedState.subcontractor_address_line_2 && (
               <p>{parsedState.subcontractor_address_line_2}</p>
             )}

@@ -3,7 +3,6 @@ import {
   Building2,
   Edit,
   FileCodeIcon as FileContract,
-  Plus,
   Trash,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -182,12 +181,16 @@ export default async function ProjectPage({
           <TabsContent value="subcontracts" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">Subcontracts</h2>
-              <Button asChild size="sm">
+              <NewSubcontractButton
+                title="New Subcontract"
+                projectId={project._id}
+              />
+              {/* <Button asChild size="sm">
                 <Link href={`/subcontracts/new?project=${project._id}`}>
                   <Plus className="mr-2 h-4 w-4" />
                   New Subcontract
                 </Link>
-              </Button>
+              </Button> */}
             </div>
 
             {subcontracts.length > 0 ? (

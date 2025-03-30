@@ -109,6 +109,7 @@ export default async function Home() {
                   <div className="rounded-full bg-primary/10 p-3 mb-4">
                     <Plus className="h-6 w-6 text-primary" />
                   </div>
+
                   <Button
                     onClick={createNewSubcontract.bind(null, undefined)}
                     variant="secondary"

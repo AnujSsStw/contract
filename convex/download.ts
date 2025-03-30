@@ -28,7 +28,7 @@ export const getSubcontractDetails = query({
       throw new Error("Project not found");
     }
 
-    const user = await ctx.db.get(project.createdBy);
+    const user = await ctx.db.get(subcontract.createdBy ?? project.createdBy);
     if (!user) {
       throw new Error("User not found");
     }

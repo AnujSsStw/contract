@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { stepSchema, subcontractsSchema } from "./schema";
+import { getUserByCtx } from "./user";
 
 export const create = mutation({
   args: {},
@@ -93,6 +94,7 @@ export const bulkUpdateOrCreate = mutation({
             projectId: data.projectId,
             projectName: data.projectName,
             currentStep: step,
+            createdBy: (await getUserByCtx(ctx))?._id,
           });
           break;
         case "subcontractor-info":
