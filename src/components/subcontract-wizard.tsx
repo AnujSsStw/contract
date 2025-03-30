@@ -309,151 +309,157 @@ export function SubcontractWizard({
 
   return (
     <div className="space-y-8">
-      <nav aria-label="Progress">
-        <ol className="grid grid-cols-1 md:grid-cols-8 gap-2">
-          {steps.map((step, index) => (
-            <li
-              key={step.id}
-              className={cn(
-                index === currentStep
-                  ? "text-primary"
-                  : "text-muted-foreground",
-                !subId && index > 0 ? "opacity-50" : "",
-              )}
-            >
-              <button
-                type="button"
-                disabled={!subId && index > 0}
+      <div className="flex flex-col md:flex-row gap-8">
+        <nav aria-label="Progress" className="md:w-64 md:shrink-0">
+          <ol className="flex md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0">
+            {steps.map((step, index) => (
+              <li
+                key={step.id}
                 className={cn(
-                  "flex flex-col items-center justify-center w-full p-2 rounded-md",
-                  index === currentStep && "bg-accent",
-                  !subId && index > 0
-                    ? "cursor-not-allowed"
-                    : "hover:bg-accent",
+                  "shrink-0",
+                  index === currentStep
+                    ? "text-primary"
+                    : "text-muted-foreground",
+                  !subId && index > 0 ? "opacity-50" : "",
                 )}
-                onClick={() => {
-                  if (!subId && index > 0) {
-                    return;
-                  }
-                  setCurrentStep(index);
-                }}
               >
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                  <step.icon className="w-4 h-4" />
-                </div>
-                <span className="mt-2 text-xs font-medium text-center hidden md:block">
-                  {step.title}
-                </span>
-                <span className="mt-2 text-xs font-medium text-center md:hidden">
-                  {index + 1}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </nav>
+                <button
+                  type="button"
+                  disabled={!subId && index > 0}
+                  className={cn(
+                    "flex items-center p-2 rounded-md text-left min-w-[200px] md:min-w-0",
+                    index === currentStep && "bg-accent",
+                    !subId && index > 0
+                      ? "cursor-not-allowed"
+                      : "hover:bg-accent",
+                  )}
+                  onClick={() => {
+                    if (!subId && index > 0) {
+                      return;
+                    }
+                    setCurrentStep(index);
+                  }}
+                >
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 shrink-0">
+                    <step.icon className="w-4 h-4" />
+                  </div>
+                  <span className="ml-3 text-sm font-medium whitespace-nowrap">
+                    {step.title}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{steps[currentStep].title}</CardTitle>
-          <CardDescription>
-            {currentStep === 0 && "Select a project or enter project details"}
-            {currentStep === 1 &&
-              "Upload subcontractor quote to extract information"}
-            {currentStep === 2 &&
-              "Select the appropriate cost code for this subcontract"}
-            {currentStep === 3 && "Enter the contract value"}
-            {currentStep === 4 &&
-              "Define the scope of work for this subcontract"}
-            {/* {currentStep === 5 && "Enter extra information"} */}
-            {currentStep === 6 &&
-              "Upload additional attachments for the subcontract"}
-            {currentStep === 7 && "Review and generate the subcontract"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {currentStep === 0 && (
-            <ProjectInfoStep
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-          )}
-          {currentStep === 1 && subId && (
-            <SubcontractorInfoStep
-              formData={formData}
-              updateFormData={updateFormData}
-              subId={subId}
-            />
-          )}
-          {currentStep === 2 && subId && (
-            <CostCodeStep formData={formData} updateFormData={updateFormData} />
-          )}
-          {currentStep === 3 && subId && (
-            <ContractValueStep
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-          )}
-          {currentStep === 4 && subId && (
-            // TODO: work on this step
-            <ScopeOfWorkStep
-              formData={formData}
-              updateFormData={updateFormData}
-              subId={subId}
-            />
-          )}
-          {currentStep === 5 && (
-            <ExtraInfoStep
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-          )}
-          {currentStep === 6 && subId && (
-            <AttachmentsStep
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-          )}
-          {currentStep === 7 && subId && formData.projectId && (
-            <PreviewStep
-              formData={formData}
-              updateFormData={updateFormData}
-              subcontractId={subId as Id<"subcontracts">}
-            />
-          )}
-          {currentStep > 0 && !subId && (
-            <div className="text-center py-8 text-muted-foreground">
-              Please select a project first to continue with the subcontract
-              creation.
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 0}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Previous
-          </Button>
-          {currentStep < steps.length - 1 ? (
-            <Button onClick={nextStep} disabled={!subId}>
-              Next
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              disabled={!subId || !canGenerateSubcontract(formData)}
-              onClick={nextStep}
-              className="flex items-center gap-2"
-            >
-              Generate Subcontract {formData.isDraft ? "(Draft)" : ""}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
+        <div className="flex-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>{steps[currentStep].title}</CardTitle>
+              <CardDescription>
+                {currentStep === 0 &&
+                  "Select a project or enter project details"}
+                {currentStep === 1 &&
+                  "Upload subcontractor quote to extract information"}
+                {currentStep === 2 &&
+                  "Select the appropriate cost code for this subcontract"}
+                {currentStep === 3 && "Enter the contract value"}
+                {currentStep === 4 &&
+                  "Define the scope of work for this subcontract"}
+                {/* {currentStep === 5 && "Enter extra information"} */}
+                {currentStep === 6 &&
+                  "Upload additional attachments for the subcontract"}
+                {currentStep === 7 && "Review and generate the subcontract"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {currentStep === 0 && (
+                <ProjectInfoStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                />
+              )}
+              {currentStep === 1 && subId && (
+                <SubcontractorInfoStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  subId={subId}
+                />
+              )}
+              {currentStep === 2 && subId && (
+                <CostCodeStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                />
+              )}
+              {currentStep === 3 && subId && (
+                <ContractValueStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                />
+              )}
+              {currentStep === 4 && subId && (
+                // TODO: work on this step
+                <ScopeOfWorkStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  subId={subId}
+                />
+              )}
+              {currentStep === 5 && (
+                <ExtraInfoStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                />
+              )}
+              {currentStep === 6 && subId && (
+                <AttachmentsStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                />
+              )}
+              {currentStep === 7 && subId && formData.projectId && (
+                <PreviewStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  subcontractId={subId as Id<"subcontracts">}
+                />
+              )}
+              {currentStep > 0 && !subId && (
+                <div className="text-center py-8 text-muted-foreground">
+                  Please select a project first to continue with the subcontract
+                  creation.
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 0}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Previous
+              </Button>
+              {currentStep < steps.length - 1 ? (
+                <Button onClick={nextStep} disabled={!subId}>
+                  Next
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  disabled={!subId || !canGenerateSubcontract(formData)}
+                  onClick={nextStep}
+                  className="flex items-center gap-2"
+                >
+                  Generate Subcontract {formData.isDraft ? "(Draft)" : ""}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

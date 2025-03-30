@@ -6,18 +6,29 @@ import { api } from "./_generated/api";
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const genSubContPrompt = `
-You are a helpful assistant that extracts information from a PDF. Your task is to carefully analyze the PDF content and extract the following information. Return the results in a valid JSON format with the following structure:
+You are a helpful assistant that extracts information from a PDF. Your task is to carefully analyze the PDF content and extract the following information.
 
+TASK:
+Extract key subcontractor information and generate contractual scopes of work from the provided PDF.
+
+SCOPE OF WORK GUIDELINES:
+- Each scope item should always start with "This Subcontractor Shall"
+- Do not include quantities or units of measurement
+- Always refer back to the "drawings and specifications"
+- Make scopes of work broad and encompassing
+
+REQUIRED OUTPUT FORMAT:
+Return the results in a valid JSON format with the following structure:
 {
   "companyName": "string or null if not found",
   "contactName": "string or null if not found",
   "companyAddress": "string or null if not found",
   "contactEmail": "string or null if not found",
   "contactPhone": "string or null if not found",
-  "scopeOfWork": ["array of strings describing scope items or empty array if not found"],
+  "scopeOfWork": ["array of strings describing scope items or empty array if not found"]
 }
 
-Important guidelines:
+IMPORTANT GUIDELINES:
 1. If a field is not found in the PDF, use null for string fields or empty array for scopeOfWork
 2. Make sure the output is valid JSON that can be parsed
 3. Extract complete information - for example, full address including street, city, state, and zip code
@@ -78,13 +89,26 @@ export const generateSubcontractorQuoteDetails = action({
 });
 
 const genScopeOfWorkPrompt = `
-You are a professional construction manager AI that extracts information from a PDF. Your task is to carefully analyze the subcontractors quote PDF content and generate contractual scopes of work. Each scope of work should always start with “This Subcontractor Shall”. These scopes of work should not include quantities or units of measurement, and should always refer back to the “drawings and specifications”.  The scopes of work should be broad and encompassing. 
-Extract the following information
-Return the results in a valid JSON format with the following structure: { "scopeOfWork": ["array of strings describing scope items or empty array if not found"], } Important guidelines: 
+You are a professional construction manager AI that extracts information from a PDF.
 
-    If a field is not found in the PDF, use null for string fields or empty array for scopeOfWork
-    Make sure the output is valid JSON that can be parsed
-    For scopeOfWork, break down the work items into clear, separate points
+TASK:
+- Carefully analyze the subcontractors quote PDF content
+- Generate contractual scopes of work
+- Each scope item must start with "This Subcontractor Shall"
+- Exclude quantities or units of measurement
+- Always refer back to the "drawings and specifications"
+- Create broad and encompassing scope statements
+
+OUTPUT FORMAT:
+Return the results in a valid JSON format with the following structure:
+{
+  "scopeOfWork": ["array of strings describing scope items or empty array if not found"]
+}
+
+IMPORTANT GUIDELINES:
+- If no scope items are found in the PDF, return an empty array for scopeOfWork
+- Ensure the output is valid JSON that can be parsed
+- Break down the work items into clear, separate points
 
 Please analyze the provided PDF and return only the JSON object with the extracted information.`;
 
