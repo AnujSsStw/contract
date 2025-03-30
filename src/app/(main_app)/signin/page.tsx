@@ -47,9 +47,7 @@ export default function SignIn() {
         router.push("/");
       })
       .catch((error) => {
-        console.log(error);
-
-        // toast.error(error);
+        toast.error(error.message);
       })
       .finally(() => {
         setLoading(false);

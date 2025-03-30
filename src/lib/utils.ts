@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const whiteListEmail = (email: string) => {
   return [
+    "anujzzztw@gmail.com",
     "aniproductmail@gmail.com",
     "bhavik@paryaniconstruction.com",
     "manish@paryaniconstruction.com",
