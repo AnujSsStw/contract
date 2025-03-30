@@ -3,6 +3,7 @@ import { Building2, FileCodeIcon as FileContract, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { NewSubcontractButton } from "@/components/new-subcontract-button";
 import { ProjectCard } from "@/components/project-card";
 import { SubcontractCard } from "@/components/subcontract-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,10 +41,7 @@ export default async function Home() {
                 New Project
               </Link>
             </Button>
-            <Button onClick={createNewSubcontract.bind(null, undefined)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Subcontract
-            </Button>
+            <NewSubcontractButton title="New Subcontract" />
           </div>
         </div>
 
