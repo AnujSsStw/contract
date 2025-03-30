@@ -261,7 +261,7 @@ export async function POST(req: Request) {
   });
 }
 
-export function createStreamingResponse(
+function createStreamingResponse(
   processFunction: (
     sendStatusUpdate: (part: string, fileName?: string) => Promise<void>,
   ) => Promise<Uint8Array>,
