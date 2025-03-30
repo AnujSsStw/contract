@@ -444,7 +444,7 @@ export function SubcontractWizard({
             </Button>
           ) : (
             <Button
-              disabled={!subId}
+              disabled={!subId || !canGenerateSubcontract(formData)}
               onClick={nextStep}
               className="flex items-center gap-2"
             >
@@ -455,5 +455,18 @@ export function SubcontractWizard({
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+function canGenerateSubcontract(formData: FormData) {
+  return (
+    formData.projectId &&
+    formData.projectName &&
+    formData.subcontractorName &&
+    formData.subcontractorAddress &&
+    formData.subcontractorContact &&
+    formData.subcontractorPhone &&
+    formData.subcontractorEmail &&
+    (formData.costCodes ? formData.costCodes.length > 0 : false)
   );
 }

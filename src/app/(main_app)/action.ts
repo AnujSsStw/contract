@@ -10,5 +10,13 @@ export const createNewSubcontract = async (projectId?: string) => {
     {},
     { token: await convexAuthNextjsToken() },
   );
-  redirect(`/subcontracts/new?subId=${d}&step=0&projectId=${projectId}`);
+  if (!d) {
+    throw new Error("Failed to create subcontract");
+  }
+
+  if (!projectId) {
+    redirect(`/subcontracts/new?subId=${d}&step=0`);
+  } else {
+    redirect(`/subcontracts/new?subId=${d}&step=0&projectId=${projectId}`);
+  }
 };

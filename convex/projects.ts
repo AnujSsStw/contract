@@ -50,12 +50,13 @@ export const getAll = query({
 });
 
 export const getById = query({
-  args: { id: v.optional(v.id("projects")) },
+  args: { id: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    if (!args.id) {
+    console.log(args.id);
+    if (args.id === undefined || args.id === "undefined") {
       return null;
     }
-    return await ctx.db.get(args.id);
+    return await ctx.db.get(args.id as Id<"projects">);
   },
 });
 

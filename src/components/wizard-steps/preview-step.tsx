@@ -22,10 +22,14 @@ export function PreviewStep({
   updateFormData,
   subcontractId,
 }: PreviewStepProps) {
-  const projectData = formData.projectId ? formData.projectId : null;
+  const projectData = formData.projectId ? formData.projectId : undefined;
   const project = useQuery(api.projects.getById, {
-    id: projectData ? (projectData as Id<"projects">) : undefined,
+    id: projectData,
   });
+
+  if (!project) {
+    return <div>Project not found</div>;
+  }
 
   return (
     <div className="space-y-6">
