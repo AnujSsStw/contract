@@ -251,10 +251,7 @@ export default function NewProjectPage() {
                   <FormItem>
                     <FormLabel>Architect</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Smith & Associates Architecture"
-                        {...field}
-                      />
+                      <Input placeholder="Smith & Associates" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
