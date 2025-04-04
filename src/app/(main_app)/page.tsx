@@ -59,7 +59,7 @@ export default async function Home() {
           </TabsList>
           <TabsContent value="projects" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.map((project) => (
+              {data.reverse().map((project) => (
                 <ProjectCard
                   key={project._id}
                   name={project.name}
@@ -85,7 +85,7 @@ export default async function Home() {
 
           <TabsContent value="subcontracts" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {subcontractsData.map((subcontract) => (
+              {subcontractsData.reverse().map((subcontract) => (
                 <SubcontractCard
                   key={subcontract._id}
                   id={subcontract._id}

@@ -179,7 +179,7 @@ export default async function ProjectPage({
 
             {subcontracts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {subcontracts.map((subcontract) => (
+                {subcontracts.reverse().map((subcontract) => (
                   <SubcontractCard
                     key={subcontract._id}
                     id={subcontract._id}
