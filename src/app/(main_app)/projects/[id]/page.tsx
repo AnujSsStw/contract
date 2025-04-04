@@ -27,30 +27,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
-import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
+import { fetchQuery } from "convex/nextjs";
 
 export const metadata: Metadata = {
   title: "Project Details | Construction Contract Generator",
   description: "View and manage project details",
 };
-
-async function getProjectData(id: Id<"projects">) {
-  const preloaded = await preloadQuery(api.projects.getById, { id });
-
-  const data = preloadedQueryResult(preloaded);
-
-  return data;
-}
-
-async function getProjectSubcontracts(projectId: Id<"projects">) {
-  const preloaded = await preloadQuery(api.subcontract.getByProjectId, {
-    projectId,
-  });
-
-  const data = preloadedQueryResult(preloaded);
-
-  return data;
-}
 
 export default async function ProjectPage({
   params,
@@ -58,8 +40,10 @@ export default async function ProjectPage({
   params: Promise<{ id: Id<"projects"> }>;
 }) {
   const projectId = (await params).id;
-  const project = await getProjectData(projectId);
-  const subcontracts = await getProjectSubcontracts(projectId);
+  const project = await fetchQuery(api.projects.getById, { id: projectId });
+  const subcontracts = await fetchQuery(api.subcontract.getByProjectId, {
+    projectId,
+  });
 
   if (!project) {
     return (

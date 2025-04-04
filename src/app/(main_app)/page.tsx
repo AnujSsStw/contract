@@ -9,7 +9,7 @@ import { SubcontractCard } from "@/components/subcontract-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@cvx/_generated/api";
-import { preloadedQueryResult, preloadQuery } from "convex/nextjs";
+import { fetchQuery } from "convex/nextjs";
 import { createNewSubcontract } from "./action";
 
 export const metadata: Metadata = {
@@ -18,11 +18,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const preloaded = await preloadQuery(api.projects.getAll, {});
-  const subcontracts = await preloadQuery(api.subcontract.getAll, {});
+  const data = await fetchQuery(api.projects.getAll, {});
+  const subcontractsData = await fetchQuery(api.subcontract.getAll, {});
 
-  const data = preloadedQueryResult(preloaded);
-  const subcontractsData = preloadedQueryResult(subcontracts);
   return (
     <>
       <div className="container py-8">
