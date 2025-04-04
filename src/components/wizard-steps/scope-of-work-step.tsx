@@ -125,6 +125,24 @@ export function ScopeOfWorkStep({
 
   // Update formData with all selected scopes
   const updateScopes = useCallback(() => {
+    // Validate that all manual scopes have cost codes
+    const manualScopesWithoutCostCodes = manualScopes
+      .filter((text) => text.trim())
+      .filter((_, i) => !selectedManualCostCodes[i]);
+
+    // Validate that all AI scopes have cost codes
+    const aiScopesWithoutCostCodes = selectedAiScopes
+      .filter((text) => text.trim())
+      .filter((scope) => !selectedAiCostCodes[scope]);
+
+    if (
+      manualScopesWithoutCostCodes.length > 0 ||
+      aiScopesWithoutCostCodes.length > 0
+    ) {
+      toast.error("Please select a cost code for all scopes");
+      return;
+    }
+
     const allScopes: Scope[] = [
       ...manualScopes
         .map((text, i) => ({
@@ -316,9 +334,16 @@ export function ScopeOfWorkStep({
                       onValueChange={(value) =>
                         handleManualCostCodeChange(index, value)
                       }
+                      required
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select cost code" />
+                      <SelectTrigger
+                        className={
+                          !selectedManualCostCodes[index] && scope.trim()
+                            ? "border-red-500"
+                            : ""
+                        }
+                      >
+                        <SelectValue placeholder="Select cost code *" />
                       </SelectTrigger>
                       <SelectContent>
                         {costCodes?.map((code, idx) => (
@@ -435,9 +460,16 @@ export function ScopeOfWorkStep({
                             onValueChange={(value) =>
                               handleAiCostCodeChange(scope, value)
                             }
+                            required
                           >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select cost code" />
+                            <SelectTrigger
+                              className={
+                                !selectedAiCostCodes[scope]
+                                  ? "border-red-500"
+                                  : ""
+                              }
+                            >
+                              <SelectValue placeholder="Select cost code *" />
                             </SelectTrigger>
                             <SelectContent>
                               {costCodes?.map((code) => (

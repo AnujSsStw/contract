@@ -45,7 +45,7 @@ export default function RootLayout({
             <ConvexClientProvider>
               <Nav />
               {children}
-              <Toaster />
+              <Toaster position="bottom-left" />
             </ConvexClientProvider>
           </ThemeProvider>
         </body>
