@@ -5,6 +5,7 @@ import chromium from "@sparticuz/chromium-min";
 import { fetchQuery } from "convex/nextjs";
 import { PDFDocument } from "pdf-lib";
 import puppeteer from "puppeteer-core";
+import { Address } from "@universe/address-parser";
 
 const isDev = process.env.NODE_ENV === "development";
 const chromiumPack =
@@ -181,21 +182,17 @@ export async function POST(req: Request) {
       });
 
       const subcontract_number = `${subcontract.project.number}-${subcontract.subcontract.costCodeData?.map((c) => c.code).join("/")}`;
+      const address = new Address(
+        subcontract.subcontract.companyAddress ?? "",
+      ).label();
+
       const data: Subcontract = {
         architect_name: subcontract.project.architect,
         bond_needed: subcontract.project.bondsRequired === true ? "Yes" : "No",
         date,
         subcontractor_name: subcontract.subcontract.contactName || "",
-        subcontractor_address_line_1: subcontract.subcontract.companyAddress
-          ? subcontract.subcontract.companyAddress.length > 50
-            ? subcontract.subcontract.companyAddress.substring(0, 50)
-            : subcontract.subcontract.companyAddress
-          : "",
-        subcontractor_address_line_2:
-          subcontract.subcontract.companyAddress &&
-          subcontract.subcontract.companyAddress.length > 50
-            ? subcontract.subcontract.companyAddress.substring(50)
-            : "",
+        subcontractor_address_line_1: `${address.line1 ?? ""}${address.line1 ? "," : ""}`,
+        subcontractor_address_line_2: `${address.line2 ?? ""}${address.line2 ? ", " : ""}${address.city ?? ""}${address.city ? ", " : ""}${address.state ?? ""}${address.state ? ", " : ""}${address.zip ?? ""}`,
         subcontractor_phone: subcontract.subcontract.contactPhone || "",
         contract_value:
           `${subcontract.subcontract.contractValueText}. ($${subcontract.subcontract.contractValue})` ||
