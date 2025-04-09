@@ -14,7 +14,8 @@ export default async function Latest({ searchParams }: PageProps) {
   const { state, page } = await searchParams;
   const pageNumber = parseInt(page);
   const base64Decoded = Buffer.from(state, "base64").toString();
-  const parsedState = JSON.parse(base64Decoded) as Subcontract;
+  const decodedJson = decodeURIComponent(base64Decoded);
+  const parsedState = JSON.parse(decodedJson) as Subcontract;
 
   return (
     <div className="flex flex-col p-4">
