@@ -13,9 +13,17 @@ interface PageProps {
 export default async function Latest({ searchParams }: PageProps) {
   const { state, page } = await searchParams;
   const pageNumber = parseInt(page);
-  // const base64Decoded = Buffer.from(state, "base64").toString();
-  const decodedJson = decodeURIComponent(state);
-  const parsedState = JSON.parse(decodedJson) as Subcontract;
+  let parsedState: Subcontract;
+  try {
+    const base64Decoded = Buffer.from(state, "base64").toString();
+    const decodedJson = decodeURIComponent(base64Decoded);
+    parsedState = JSON.parse(decodedJson) as Subcontract;
+  } catch (error) {
+    console.error("Error parsing state:", error);
+    throw new Error(
+      "Invalid state parameter. Please ensure the data is properly encoded.",
+    );
+  }
 
   return (
     <div className="flex flex-col p-4">

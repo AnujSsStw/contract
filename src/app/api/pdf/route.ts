@@ -39,13 +39,13 @@ async function captureLatestPdfForDevice(
   try {
     const jsonStr = JSON.stringify(updateState);
     const encodedJson = encodeURIComponent(jsonStr);
-    // const base64State = Buffer.from(encodedJson).toString("base64");
+    const base64State = Buffer.from(encodedJson).toString("base64");
     const serverUrl = isDev
       ? "http://localhost:3000"
       : `https://${process.env.VERCEL_URL}`;
 
     const pages = [1, 3, 5].map((page) => ({
-      url: `${serverUrl}/latest?state=${encodedJson}&page=${page}`,
+      url: `${serverUrl}/latest?state=${base64State}&page=${page}`,
       page,
     }));
 
