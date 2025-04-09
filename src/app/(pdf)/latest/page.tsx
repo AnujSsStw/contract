@@ -13,8 +13,8 @@ interface PageProps {
 export default async function Latest({ searchParams }: PageProps) {
   const { state, page } = await searchParams;
   const pageNumber = parseInt(page);
-  const base64Decoded = Buffer.from(state, "base64").toString();
-  const decodedJson = decodeURIComponent(base64Decoded);
+  // const base64Decoded = Buffer.from(state, "base64").toString();
+  const decodedJson = decodeURIComponent(state);
   const parsedState = JSON.parse(decodedJson) as Subcontract;
 
   return (
@@ -234,11 +234,11 @@ export default async function Latest({ searchParams }: PageProps) {
             <p>Subcontractor Name: {parsedState.subcontractor_name}</p>
             <p>
               Subcontractor Address: {parsedState.subcontractor_address_line_1}
+              {parsedState.subcontractor_address_line_2 && (
+                <p>{parsedState.subcontractor_address_line_2}</p>
+              )}
             </p>
             <p>Subcontractor Phone: {parsedState.subcontractor_phone}</p>
-            {parsedState.subcontractor_address_line_2 && (
-              <p>{parsedState.subcontractor_address_line_2}</p>
-            )}
           </div>
         </div>
       )}
