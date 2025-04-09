@@ -56,12 +56,10 @@ export default async function Latest({ searchParams }: PageProps) {
                 {parsedState.subcontractor_company_name} (hereinafter
                 &quot;Subcontractor&quot;)
               </p>
-              <div className="flex flex-col gap-2">
-                <p>{parsedState.subcontractor_address_line_1}</p>
-                {parsedState.subcontractor_address_line_2 && (
-                  <p>{parsedState.subcontractor_address_line_2}</p>
-                )}
-              </div>
+              <p>{parsedState.subcontractor_address_line_1}</p>
+              {parsedState.subcontractor_address_line_2 && (
+                <p>{parsedState.subcontractor_address_line_2}</p>
+              )}
               <p>{parsedState.subcontractor_phone}</p>
             </div>
             <p>to perform the work identified herein.</p>
