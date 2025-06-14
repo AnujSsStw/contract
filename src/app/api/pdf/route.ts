@@ -4,8 +4,9 @@ import { Id } from "@cvx/_generated/dataModel";
 import chromium from "@sparticuz/chromium-min";
 import { fetchQuery } from "convex/nextjs";
 import { PDFDocument } from "pdf-lib";
-import puppeteer from "puppeteer-core";
+import puppeteer, { Browser } from "puppeteer-core";
 import { Address } from "@universe/address-parser";
+import superjson from "superjson";
 
 const isDev = process.env.NODE_ENV === "development";
 const chromiumPack =
@@ -22,24 +23,49 @@ interface PdfResult {
 async function captureLatestPdfForDevice(
   updateState: Subcontract,
 ): Promise<PdfResult[]> {
-  const browser = await puppeteer.launch({
-    args: isDev
-      ? [
-          ...puppeteer.defaultArgs(),
-          "--hide-scrollbars",
-          "--disable-web-security",
-        ]
-      : chromium.args,
-    executablePath: isDev
-      ? localChromePath
-      : await chromium.executablePath(chromiumPack),
-    headless: true,
-  });
+  let browser: Browser | undefined;
+  let retries = 3;
+
+  while (retries > 0) {
+    try {
+      browser = await puppeteer.launch({
+        args: isDev
+          ? [
+              ...puppeteer.defaultArgs(),
+              "--hide-scrollbars",
+              "--disable-web-security",
+              "--no-sandbox",
+              "--disable-setuid-sandbox",
+            ]
+          : chromium.args,
+        executablePath: isDev
+          ? localChromePath
+          : await chromium.executablePath(chromiumPack),
+        headless: true,
+      });
+      break;
+    } catch (error: unknown) {
+      retries--;
+      if (retries === 0) {
+        throw new Error(
+          `Failed to launch browser after 3 attempts: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      // Wait for 1 second before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
+  if (!browser) {
+    throw new Error("Failed to initialize browser");
+  }
 
   try {
-    const jsonStr = JSON.stringify(updateState);
-    const encodedJson = encodeURIComponent(jsonStr);
-    const base64State = Buffer.from(encodedJson).toString("base64");
+    const jsonStr = superjson.stringify(updateState);
+    console.log(jsonStr);
+
+    // const encodedJson = encodeURIComponent(jsonStr);
+    const base64State = Buffer.from(jsonStr).toString("base64");
     const serverUrl = isDev
       ? "http://localhost:3000"
       : `https://${process.env.VERCEL_URL}`;
@@ -65,6 +91,9 @@ async function captureLatestPdfForDevice(
             },
           });
           return { page, pdf: Buffer.from(pdf), type: "puppeteer" as const };
+        } catch (error) {
+          console.error("Error capturing PDF:", error);
+          return { page, pdf: Buffer.from([]), type: "puppeteer" as const };
         } finally {
           await browserPage.close();
         }

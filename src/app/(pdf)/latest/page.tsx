@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Subcontract } from "./types";
+import superjson from "superjson";
 
 interface SearchParams {
   state: string;
@@ -14,12 +15,30 @@ export default async function Latest({ searchParams }: PageProps) {
   const { state, page } = await searchParams;
   const pageNumber = parseInt(page);
   let parsedState: Subcontract;
+  const base64Decoded = Buffer.from(state, "base64").toString();
   try {
-    const base64Decoded = Buffer.from(state, "base64").toString();
-    const decodedJson = decodeURIComponent(base64Decoded);
-    parsedState = JSON.parse(decodedJson) as Subcontract;
+    // const decodedJson = decodeURIComponent(base64Decoded);
+    parsedState = superjson.parse(base64Decoded) as Subcontract;
   } catch (error) {
     console.error("Error parsing state:", error);
+    if (
+      error instanceof SyntaxError &&
+      error.message.includes("control character")
+    ) {
+      console.error(
+        "The issue is with control characters in the JSON. Position:",
+        error.message.match(/position (\d+)/)?.[1],
+      );
+
+      // You could try to display a small section of the problematic area
+      const pos = parseInt(error.message.match(/position (\d+)/)?.[1] || "0");
+      const snippet = base64Decoded.substring(
+        Math.max(0, pos - 20),
+        Math.min(base64Decoded.length, pos + 20),
+      );
+      console.error("Problematic section:", snippet);
+    }
+
     throw new Error(
       "Invalid state parameter. Please ensure the data is properly encoded.",
     );
