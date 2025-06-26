@@ -6,6 +6,8 @@ import { SubcontractAttachmentsCard } from "@/components/subcontract-attachments
 import { SubcontractDetailsCard } from "@/components/subcontract-details-card";
 import { SubcontractDownloadButton } from "@/components/subcontract-download-button";
 import { SubcontractScopeCard } from "@/components/subcontract-scope-card";
+import { SubcontractDocumentsCard } from "@/components/subcontract-documents-card";
+import { SendForSignatureButton } from "@/components/send-for-signature-button";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -46,7 +48,6 @@ export default async function SubcontractPage({
 }) {
   const id = (await params).id;
   const subcontract = await getSubcontractData(id);
-  console.log(subcontract);
 
   if (!subcontract) {
     return (
@@ -135,14 +136,14 @@ export default async function SubcontractPage({
             </Button>
           }
           <SubcontractDownloadButton subcontractId={id} />
-          {/* {subcontract.isDraft && (
-            <Button asChild>
-              <Link href={`/subcontracts/${id}/send`}>
-                <Send className="mr-2 h-4 w-4" />
-                Send for Signature
-              </Link>
-            </Button>
-          )} */}
+          {!subcontract.isDraft && (
+            <SendForSignatureButton
+              subcontractId={id as Id<"subcontracts">}
+              projectName={subcontract.projectName}
+              subcontractorName={subcontract.contactName}
+              subcontractorEmail={subcontract.contactEmail}
+            />
+          )}
         </div>
       </div>
 
@@ -164,6 +165,10 @@ export default async function SubcontractPage({
               <FileText className="h-4 w-4" />
               Attachments ({subcontract.attachments?.length ?? 0})
             </TabsTrigger>
+            <TabsTrigger value="documents" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Documents
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -176,6 +181,10 @@ export default async function SubcontractPage({
 
           <TabsContent value="attachments">
             <SubcontractAttachmentsCard attachments={subcontract.attachments} />
+          </TabsContent>
+
+          <TabsContent value="documents">
+            <SubcontractDocumentsCard />
           </TabsContent>
         </Tabs>
       </div>
