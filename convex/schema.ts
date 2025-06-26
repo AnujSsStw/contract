@@ -105,6 +105,10 @@ export const subcontractsSchema = {
   //docusign sent
   docusignSent: v.optional(v.boolean()),
   createdBy: v.optional(v.id("users")),
+
+  // PDF generation tracking
+  dataHash: v.optional(v.string()), // Hash of the data used to generate PDF
+  pdfGeneratedAt: v.optional(v.number()), // Timestamp when PDF was last generated
 };
 
 const scopeOfWorksSchema = {
@@ -112,6 +116,37 @@ const scopeOfWorksSchema = {
   category: v.string(),
   scope_of_work: v.string(),
   type: v.union(v.literal("manual"), v.literal("suggested"), v.literal("ai")),
+};
+
+// Document signing schemas
+export const documentsSchema = {
+  originalPdfUrl: v.string(),
+  status: v.union(v.literal("pending"), v.literal("completed")),
+  finalPdfUrl: v.optional(v.string()),
+  createdBy: v.id("users"),
+  title: v.optional(v.string()),
+  description: v.optional(v.string()),
+};
+
+export const signersSchema = {
+  documentId: v.id("documents"),
+  email: v.string(),
+  signingToken: v.string(),
+  status: v.union(v.literal("pending"), v.literal("signed")),
+  signedAt: v.optional(v.number()),
+  userId: v.optional(v.id("users")),
+  name: v.optional(v.string()),
+};
+
+export const signatureDataSchema = {
+  signerId: v.id("signers"),
+  pageNumber: v.number(),
+  type: v.union(v.literal("signature"), v.literal("text"), v.literal("date")),
+  data: v.string(), // Base64 for signature image, or text string
+  positionX: v.number(),
+  positionY: v.number(),
+  width: v.number(),
+  height: v.number(),
 };
 
 // The schema is normally optional, but Convex Auth
@@ -130,4 +165,16 @@ export default defineSchema({
   subcontracts: defineTable(subcontractsSchema).index("byProjectId", [
     "projectId",
   ]),
+  // Document signing tables
+  documents: defineTable(documentsSchema)
+    .index("byStatus", ["status"])
+    .index("byCreatedBy", ["createdBy"]),
+  signers: defineTable(signersSchema)
+    .index("byDocumentId", ["documentId"])
+    .index("bySigningToken", ["signingToken"])
+    .index("byEmail", ["email"])
+    .index("byStatus", ["status"]),
+  signatureData: defineTable(signatureDataSchema)
+    .index("bySignerId", ["signerId"])
+    .index("byPageNumber", ["pageNumber"]),
 });
