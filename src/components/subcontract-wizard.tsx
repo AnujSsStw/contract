@@ -35,6 +35,7 @@ import { DataModel, Id } from "@cvx/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { ExtraInfoStep } from "./wizard-steps/extra-info-step";
+import { useCallback } from "react";
 const steps = [
   { id: "project-info", title: "Project Information", icon: Building2 },
   { id: "subcontractor-info", title: "Subcontractor Quote", icon: FileText },
@@ -303,9 +304,9 @@ export function SubcontractWizard({
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
-  const updateFormData = (data: Partial<typeof formData>) => {
+  const updateFormData = useCallback((data: Partial<typeof formData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
-  };
+  }, []);
 
   return (
     <div className="space-y-8">

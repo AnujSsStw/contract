@@ -1,7 +1,8 @@
 "use client";
 
+//TODO: what this page should do?
 import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@cvx/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Plus, FileText, Users, Calendar } from "lucide-react";
+import { Loader2, Plus, FileText, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 export default function DocumentsPage() {
@@ -29,6 +30,7 @@ export default function DocumentsPage() {
   });
 
   const documents = useQuery(api.documents.getMyDocuments);
+  const documentCreation = useMutation(api.documents.create);
 
   const addSigner = () => {
     setFormData({
@@ -74,8 +76,15 @@ export default function DocumentsPage() {
       return;
     }
 
-    // TODO: Implement document creation
-    toast.success("Document creation will be implemented");
+    await documentCreation({
+      title: formData.title,
+      description: formData.description,
+      originalPdfUrl: formData.pdfUrl,
+      signers: formData.signers,
+      subcontractId: undefined,
+    });
+
+    toast.success("Document created successfully");
     setIsCreateDialogOpen(false);
   };
 
@@ -200,7 +209,7 @@ export default function DocumentsPage() {
 
       {documents && documents.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {documents.map((doc: any) => (
+          {documents.map((doc) => (
             <Card key={doc._id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -230,10 +239,6 @@ export default function DocumentsPage() {
                   <span>
                     Created {new Date(doc._creationTime).toLocaleDateString()}
                   </span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>Signers: {doc.signers?.length || "Unknown"}</span>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1">

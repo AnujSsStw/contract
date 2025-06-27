@@ -174,11 +174,12 @@ export function ScopeOfWorkStep({
     toast.success("Scopes updated");
   }, [
     manualScopes,
-    selectedManualCostCodes,
-    selectedSuggested,
     selectedAiScopes,
-    selectedAiCostCodes,
+    selectedSuggested,
+    updateFormData,
     uploadedAiScopes,
+    selectedManualCostCodes,
+    selectedAiCostCodes,
     suggestedScopes?.costCode,
   ]);
 

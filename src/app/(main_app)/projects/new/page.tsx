@@ -92,7 +92,7 @@ export default function NewProjectPage() {
       form.setValue("description", projectData.description);
       form.setValue("status", projectData.status ?? "planning");
     }
-  }, [projectData]);
+  }, [projectData, form]);
 
   async function onSubmit(values: z.infer<typeof projectSchema>) {
     try {
