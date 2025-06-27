@@ -42,18 +42,18 @@ interface PdfData {
 }
 
 // Function to generate a hash from subcontract data
-function generateDataHash(data: PdfData): string {
+async function generateDataHash(data: PdfData): Promise<string> {
   // Create a stable string representation of the data
   const dataString = JSON.stringify(data, Object.keys(data).sort());
+  const encoder = new TextEncoder();
+  const encodedData = encoder.encode(dataString);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", encodedData);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 
-  // Simple hash function (you could use crypto.createHash in a real implementation)
-  let hash = 0;
-  for (let i = 0; i < dataString.length; i++) {
-    const char = dataString.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return hash.toString(36); // Convert to base36 for shorter string
+  return hashHex;
 }
 
 export const getSubcontractDetails = query({
@@ -114,6 +114,7 @@ export const addSubcontractUrl = mutation({
   },
 });
 
+//TODO: might add a check to delete the old pdfs
 export const updateSubcontractPdfHash = mutation({
   args: {
     subcontractId: v.id("subcontracts"),
@@ -209,7 +210,7 @@ export const getSubcontractDataHash = query({
       attachments: subcontract.attachments || [],
     };
 
-    const currentHash = generateDataHash(pdfData);
+    const currentHash = await generateDataHash(pdfData);
     const needsRegeneration =
       !subcontract.dataHash || subcontract.dataHash !== currentHash;
 

@@ -263,7 +263,7 @@ export function PDFViewer({
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          {/* <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded"></div>
               <span>Existing signatures</span>
@@ -272,7 +272,7 @@ export function PDFViewer({
               <div className="w-3 h-3 bg-blue-500 rounded"></div>
               <span>Your signatures</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </CardContent>
     </Card>

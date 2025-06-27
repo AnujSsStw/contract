@@ -138,10 +138,11 @@ export default async function SubcontractPage({
           <SubcontractDownloadButton subcontractId={id} />
           {!subcontract.isDraft && (
             <SendForSignatureButton
-              subcontractId={id as Id<"subcontracts">}
               projectName={subcontract.projectName}
               subcontractorName={subcontract.contactName}
               subcontractorEmail={subcontract.contactEmail}
+              pdfUrl={subcontract.fileUrl}
+              subcontractId={id}
             />
           )}
         </div>
@@ -184,7 +185,7 @@ export default async function SubcontractPage({
           </TabsContent>
 
           <TabsContent value="documents">
-            <SubcontractDocumentsCard />
+            <SubcontractDocumentsCard subcontractId={id} />
           </TabsContent>
         </Tabs>
       </div>

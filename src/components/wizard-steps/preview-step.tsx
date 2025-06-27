@@ -221,7 +221,7 @@ export function PreviewStep({
 
       <div className="flex flex-col gap-2">
         <Label>After generating the subcontract:</Label>
-        <div className="flex items-center gap-2 text-sm">
+        {/* <div className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
             id="send-docusign"
@@ -234,7 +234,7 @@ export function PreviewStep({
             }}
           />
           <label htmlFor="send-docusign">Send to DocuSign for signature</label>
-        </div>
+        </div> */}
         <div className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"

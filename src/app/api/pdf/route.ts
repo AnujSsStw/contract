@@ -2,10 +2,9 @@ import { Subcontract } from "@/app/(pdf)/latest/types";
 import { api } from "@cvx/_generated/api";
 import { Id } from "@cvx/_generated/dataModel";
 import chromium from "@sparticuz/chromium-min";
-import { fetchQuery } from "convex/nextjs";
+import { fetchQuery, fetchMutation } from "convex/nextjs";
 import { PDFDocument } from "pdf-lib";
 import puppeteer, { Browser } from "puppeteer-core";
-import { Address } from "@universe/address-parser";
 import superjson from "superjson";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -170,85 +169,71 @@ export async function POST(req: Request) {
       }
 
       await sendStatusUpdate("Validating request data");
-      let subcontractId;
-      try {
-        const body = await req.json();
-        subcontractId = body.subcontractId;
-        if (!subcontractId) {
-          throw new Error("subcontractId is required");
-        }
-      } catch {
+      const body = await req.json();
+      const subcontractId = body.subcontractId;
+      if (!subcontractId) {
         throw new Error("Invalid request body");
       }
 
-      await sendStatusUpdate("Fetching subcontract details");
-      const subcontract = await fetchQuery(api.download.getSubcontractDetails, {
+      await sendStatusUpdate("Checking PDF cache status");
+      // Check if we need to regenerate the PDF based on data hash
+      const hashCheck = await fetchQuery(api.download.getSubcontractDataHash, {
         subcontractId,
       });
-      if (!subcontract) {
-        throw new Error("Subcontract not found");
+
+      if (!hashCheck) {
+        throw new Error("Failed to check PDF cache status");
       }
 
-      // Return existing PDF if available
-      if (subcontract.subcontract.fileUrl) {
-        await sendStatusUpdate("Retrieving existing PDF");
-        const response = await fetch(subcontract.subcontract.fileUrl);
-        if (!response.ok) {
-          throw new Error("Failed to fetch existing PDF");
+      // If hash matches and PDF exists, return existing PDF
+      if (!hashCheck.needsRegeneration) {
+        await sendStatusUpdate("Fetching subcontract details");
+        const subcontract = await fetchQuery(
+          api.download.getSubcontractDetails,
+          {
+            subcontractId,
+          },
+        );
+        if (!subcontract) {
+          throw new Error("Subcontract not found");
         }
-        const pdfDoc = await PDFDocument.load(await response.arrayBuffer());
-        return await pdfDoc.save();
+
+        // Return existing PDF if available
+        if (subcontract.subcontract.fileUrl) {
+          await sendStatusUpdate("Retrieving existing PDF");
+          const response = await fetch(subcontract.subcontract.fileUrl);
+          if (!response.ok) {
+            throw new Error("Failed to fetch existing PDF");
+          }
+          const pdfDoc = await PDFDocument.load(await response.arrayBuffer());
+          return await pdfDoc.save();
+        }
       }
+
+      await sendStatusUpdate("Fetching subcontract details");
+      // const subcontract = await fetchQuery(api.download.getSubcontractDetails, {
+      //   subcontractId,
+      // });
+      // if (!subcontract) {
+      //   throw new Error("Subcontract not found");
+      // }
 
       await sendStatusUpdate("Preparing contract data");
-      // Prepare subcontract data
-      const date = new Date(
-        subcontract.subcontract._creationTime,
-      ).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      });
-
-      const subcontract_number = `${subcontract.project.number}-${subcontract.subcontract.costCodeData?.map((c) => c.code).join("/")}`;
-      const address = new Address(
-        subcontract.subcontract.companyAddress ?? "",
-      ).label();
-
-      const data: Subcontract = {
-        architect_name: subcontract.project.architect,
-        bond_needed: subcontract.project.bondsRequired === true ? "Yes" : "No",
-        date,
-        subcontractor_name: subcontract.subcontract.contactName || "",
-        subcontractor_address_line_1: `${address.line1 ?? ""}${address.line1 ? "," : ""}`,
-        subcontractor_address_line_2: `${address.line2 ?? ""}${address.line2 ? ", " : ""}${address.city ?? ""}${address.city ? ", " : ""}${address.state ?? ""}${address.state ? ", " : ""}${address.zip ?? ""}`,
-        subcontractor_phone: subcontract.subcontract.contactPhone || "",
-        contract_value:
-          `${subcontract.subcontract.contractValueText}. ($${subcontract.subcontract.contractValue})` ||
-          "",
-        cost_breakdown: subcontract.subcontract.costBreakdown || [],
-        cost_code:
-          subcontract.subcontract.costCodeData?.map((c) => c.code) || [],
-        exclusion: subcontract.subcontract.exclusions || [],
-        project_name: subcontract.project.name,
-        project_address: subcontract.project.address,
-        project_generated_user: subcontract.user.name || "",
-        project_generated_user_email: subcontract.user.email || "",
-        project_number: subcontract.project.number,
-        scope_of_work: subcontract.subcontract.scopeOfWork || [],
-        subcontract_number,
-        project_owner_client_legal_name: subcontract.project.clientLegalEntity,
-        divisions: subcontract.costCodes || [],
-        subvContactName: subcontract.subcontract.contactEmail || "",
-        subcontractor_company_name: subcontract.subcontract.companyName || "",
-      };
+      // Prepare subcontract data using the data from hash check
+      // const data: Subcontract = {
+      //   ...hashCheck.pdfData,
+      //   // Parse the address properly for the PDF template
+      //   // subcontractor_address_line_1:
+      //   //   hashCheck.pdfData.subcontractor_address_line_1,
+      //   // subcontractor_address_line_2: "", // This will be empty as we don't have separate fields
+      // };
 
       // Generate all PDFs in parallel
       await sendStatusUpdate("Generating PDFs");
       const [puppeteerPdfs, staticPdfs, attachmentPdfs] = await Promise.all([
-        captureLatestPdfForDevice(data),
+        captureLatestPdfForDevice(hashCheck.pdfData),
         fetchAndLoadStaticPdfs(),
-        fetchAndLoadAttachments(subcontract.subcontract.attachments),
+        fetchAndLoadAttachments(hashCheck.pdfData.attachments),
       ]);
 
       // Merge PDFs with progress updates
@@ -278,9 +263,41 @@ export async function POST(req: Request) {
         }
       }
 
-      const fileName = `${subcontract_number}.pdf`;
+      const fileName = `${hashCheck.pdfData.subcontract_number}.pdf`;
       await sendStatusUpdate("Finalizing PDF document", fileName);
-      return await mergedDoc.save();
+
+      // Generate the PDF
+      const pdfBytes = await mergedDoc.save();
+
+      // Upload the PDF to storage
+      await sendStatusUpdate("Uploading PDF to storage");
+      const uploadUrl = await fetchMutation(api.storage.generateUploadUrl);
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/pdf",
+        },
+        body: pdfBytes,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload PDF to storage");
+      }
+
+      const { storageId } = await uploadResponse.json();
+
+      // Get the file URL using the storage API
+      const fileUrl = `${process.env.NEXT_PUBLIC_CONVEX_URL_SITE}/getImage?storageId=${storageId}`;
+
+      // Update the hash and file URL in the database
+      await fetchMutation(api.download.updateSubcontractPdfHash, {
+        subcontractId,
+        dataHash: hashCheck.currentHash,
+        fileUrl,
+      });
+
+      return pdfBytes;
     } catch (error) {
       console.error("PDF generation error:", error);
       throw error;

@@ -38,6 +38,7 @@ interface SigningExperienceProps {
   documentId: Id<"documents">;
   token: string;
   signer: Signer;
+  isParyani: boolean;
 }
 
 export function SigningExperience({
@@ -45,6 +46,7 @@ export function SigningExperience({
   existingSignatures,
   documentId,
   token,
+  isParyani,
 }: SigningExperienceProps) {
   const [signatures, setSignatures] =
     useState<SignatureData[]>(existingSignatures);
@@ -58,36 +60,36 @@ export function SigningExperience({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
 
-  // Function to regenerate PDF with current signatures
   const regeneratePdf = useCallback(
     async (currentSignatures: SignatureData[]) => {
       if (!originalPdfBase64) return;
 
       const pdfDoc = await PDFDocument.load(originalPdfBase64);
       const pages = pdfDoc.getPages();
-      const firstPage = pages[currentPage - 1];
 
-      // Clear the page by redrawing it (this is a simple approach)
-      // For a more sophisticated approach, you might want to store the original page content
-
-      // Re-add all signatures
       for (const signature of currentSignatures) {
-        if (signature.type === "signature") {
-          const pngImage = await pdfDoc.embedPng(signature.data);
-          const pngDims = pngImage.scale(scale * 0.3);
-          firstPage.drawImage(pngImage, {
-            x: signature.positionX,
-            y: signature.positionY,
-            width: pngDims.width,
-            height: pngDims.height,
-          });
-        } else if (signature.type === "text") {
-          firstPage.drawText(signature.data, {
-            x: signature.positionX,
-            y: signature.positionY,
-            size: 20 * scale,
-            color: rgb(0.074, 0.545, 0.262),
-          });
+        const pageIndex = signature.pageNumber - 1;
+        if (pageIndex >= 0 && pageIndex < pages.length) {
+          const page = pages[pageIndex];
+
+          if (signature.type === "signature") {
+            const pngImage = await pdfDoc.embedPng(signature.data);
+            page.drawImage(pngImage, {
+              x: signature.positionX,
+              y: signature.positionY,
+              width: signature.width,
+              height: signature.height,
+            });
+          } else if (signature.type === "text" || signature.type === "date") {
+            // Use a default font size if not specified, or scale based on the signature area
+            const fontSize = signature.type === "date" ? 12 : 15.3;
+            page.drawText(signature.data, {
+              x: signature.positionX,
+              y: signature.positionY,
+              size: fontSize * scale,
+              color: rgb(0.074, 0.545, 0.262),
+            });
+          }
         }
       }
 
@@ -96,10 +98,10 @@ export function SigningExperience({
       const URL = await blobToURL(blob);
       return URL as string;
     },
-    [currentPage, originalPdfBase64, scale],
+    [originalPdfBase64, scale],
   );
 
-  // Initialize PDF data when component mounts
+  // Initialize PDF data when component mounts or when pdfUrl/existingSignatures change
   useEffect(() => {
     const initializePdf = async () => {
       try {
@@ -109,6 +111,7 @@ export function SigningExperience({
         if (newPdfUrl) {
           setPdf(newPdfUrl);
         }
+        console.log("PDF initialized");
       } catch (error) {
         console.error("Failed to initialize PDF:", error);
       }
@@ -124,6 +127,7 @@ export function SigningExperience({
     positionY: number;
     width: number;
     height: number;
+    pageNumber: number;
   }) => {
     if (!pdf) {
       toast.error("Please initialize the PDF first");
@@ -131,8 +135,13 @@ export function SigningExperience({
     }
 
     const newSignature: SignatureData = {
-      pageNumber: currentPage,
-      ...signature,
+      pageNumber: signature.pageNumber,
+      type: signature.type,
+      data: signature.data,
+      positionX: signature.positionX,
+      positionY: signature.positionY,
+      width: signature.width,
+      height: signature.height,
     };
 
     const updatedSignatures = [...signatures, newSignature];
@@ -203,7 +212,12 @@ export function SigningExperience({
       {/* Signature Panel */}
       <div className="space-y-6">
         {/* Signature Creation */}
-        <SignatureCapture onSignatureAdd={handleSignatureAdd} />
+        <SignatureCapture
+          onSignatureAdd={handleSignatureAdd}
+          isParyani={isParyani}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
 
         {/* Current Signatures */}
         {signatures.length > 0 && (

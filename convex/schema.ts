@@ -126,6 +126,7 @@ export const documentsSchema = {
   createdBy: v.id("users"),
   title: v.optional(v.string()),
   description: v.optional(v.string()),
+  subcontractId: v.optional(v.id("subcontracts")),
 };
 
 export const signersSchema = {
@@ -168,7 +169,8 @@ export default defineSchema({
   // Document signing tables
   documents: defineTable(documentsSchema)
     .index("byStatus", ["status"])
-    .index("byCreatedBy", ["createdBy"]),
+    .index("byCreatedBy", ["createdBy"])
+    .index("bySubcontractId", ["subcontractId"]),
   signers: defineTable(signersSchema)
     .index("byDocumentId", ["documentId"])
     .index("bySigningToken", ["signingToken"])

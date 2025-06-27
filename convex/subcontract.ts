@@ -1,8 +1,11 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { stepSchema, subcontractsSchema } from "./schema";
 import { getUserByCtx } from "./user";
+
+const DELETE_SUBCONTRACT_AFTER_MS = 1000 * 60 * 60 * 6; // 6 hours
 
 export const create = mutation({
   args: {},
@@ -14,7 +17,31 @@ export const create = mutation({
 
     //TODO: add creator
     const id = await ctx.db.insert("subcontracts", {});
+    // basically if the projectId is not set, we can delete the subcontract after 6 hours
+    await ctx.scheduler.runAfter(
+      DELETE_SUBCONTRACT_AFTER_MS,
+      internal.subcontract.destruct,
+      {
+        subId: id,
+      },
+    );
     return id;
+  },
+});
+
+export const destruct = internalMutation({
+  args: {
+    subId: v.id("subcontracts"),
+  },
+  handler: async (ctx, args) => {
+    const { subId } = args;
+    const subcontract = await ctx.db.get(subId);
+    if (!subcontract) {
+      return;
+    }
+    if (!subcontract.projectId) {
+      await ctx.db.delete(subId);
+    }
   },
 });
 

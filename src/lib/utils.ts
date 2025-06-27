@@ -23,7 +23,14 @@ export async function convertPdfUrlToBase64(url: string): Promise<string> {
 
     const arrayBuffer = await response.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
-    const base64 = btoa(String.fromCharCode(...uint8Array));
+
+    // Convert to base64 using a more efficient method
+    let binary = "";
+    const len = uint8Array.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(uint8Array[i]);
+    }
+    const base64 = btoa(binary);
 
     return `data:application/pdf;base64,${base64}`;
   } catch (error) {
