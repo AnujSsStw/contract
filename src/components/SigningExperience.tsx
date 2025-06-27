@@ -177,10 +177,15 @@ export function SigningExperience({
 
     setIsSubmitting(true);
     try {
+      // filter out the signatures that are already in existingSignatures
+      const signaturesToSave = signatures.filter(
+        (s) => !existingSignatures.some((e) => e.data === s.data),
+      );
+
       await saveSignature({
         documentId,
         token,
-        signatureData: signatures,
+        signatureData: signaturesToSave,
       });
 
       toast.success("Document signed successfully!");
@@ -220,39 +225,51 @@ export function SigningExperience({
         />
 
         {/* Current Signatures */}
-        {signatures.length > 0 && (
+        {signatures.filter(
+          (sig) =>
+            !existingSignatures.some((existing) => existing.data === sig.data),
+        ).length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Your Signatures</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {signatures.map((sig, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary">
-                      {sig.type === "signature"
-                        ? "✍️ Signature"
-                        : sig.type === "text"
-                          ? "📝 Text"
-                          : "📅 Date"}
-                    </Badge>
-                    <span className="text-sm font-medium">
-                      {sig.type === "signature" ? "Drawn signature" : sig.data}
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeSignature(index)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              {signatures
+                .filter(
+                  (sig) =>
+                    !existingSignatures.some(
+                      (existing) => existing.data === sig.data,
+                    ),
+                )
+                .map((sig, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-3">
+                      <Badge variant="secondary">
+                        {sig.type === "signature"
+                          ? "✍️ Signature"
+                          : sig.type === "text"
+                            ? "📝 Text"
+                            : "📅 Date"}
+                      </Badge>
+                      <span className="text-sm font-medium">
+                        {sig.type === "signature"
+                          ? "Drawn signature"
+                          : sig.data}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeSignature(index)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
             </CardContent>
           </Card>
         )}
@@ -262,7 +279,15 @@ export function SigningExperience({
           <CardContent className="pt-6">
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting || signatures.length === 0}
+              disabled={
+                isSubmitting ||
+                signatures.filter(
+                  (sig) =>
+                    !existingSignatures.some(
+                      (existing) => existing.data === sig.data,
+                    ),
+                ).length === 0
+              }
               className="w-full"
             >
               {isSubmitting ? (
@@ -277,7 +302,12 @@ export function SigningExperience({
                 </>
               )}
             </Button>
-            {signatures.length === 0 && (
+            {signatures.filter(
+              (sig) =>
+                !existingSignatures.some(
+                  (existing) => existing.data === sig.data,
+                ),
+            ).length === 0 && (
               <p className="text-xs text-muted-foreground text-center mt-2">
                 Add at least one signature to continue
               </p>
