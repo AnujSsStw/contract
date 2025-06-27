@@ -9,7 +9,7 @@ function generateSigningToken(): string {
     Math.random().toString(36).substring(2, 15)
   );
 }
-const baseUrl = "http://localhost:3000";
+const baseUrl = process.env.SITE_URL || "http://localhost:3000";
 
 // Create a new document for signing
 export const create = mutation({
